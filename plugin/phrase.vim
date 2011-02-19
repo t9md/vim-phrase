@@ -40,7 +40,7 @@ let s:default_comment = {
             \"sh": "#",
             \"python": "#",
             \"javascript": "//",
-    \}
+            \}
 
 let s:default_ft2ext = {
             \ 'perl': 'pl',
@@ -50,59 +50,59 @@ let s:default_ft2ext = {
             \ }
 
 fun! g:Phrase.get_comment_str() dict
-	if !exists("g:phrase_comment")
-		let g:phrase_comment = {}
-	endif
-	return get(extend(s:default_comment, g:phrase_comment, "force"), &ft, '#')
+    if !exists("g:phrase_comment")
+        let g:phrase_comment = {}
+    endif
+    return get(extend(s:default_comment, g:phrase_comment, "force"), &ft, '#')
 endfun
 
 fun! g:Phrase.phrase_filename(query) dict
-	if !exists("g:phrase_ft2ext")
-		let g:phrase_ft2ext = {}
-	endif
-	let table = extend(s:default_ft2ext, g:phrase_ft2ext, "force")
-	let ext   = get(table, a:query, a:query)
-	let base = "phrase"
-	let fname = !empty(ext) ? base . "." . ext : base
-	return fname
+    if !exists("g:phrase_ft2ext")
+        let g:phrase_ft2ext = {}
+    endif
+    let table = extend(s:default_ft2ext, g:phrase_ft2ext, "force")
+    let ext   = get(table, a:query, a:query)
+    let base = "phrase"
+    let fname = !empty(ext) ? base . "." . ext : base
+    return fname
 endfun
 
 fun! g:Phrase.create() range dict
-	let selection = getline(a:firstline, a:lastline)
-	call g:Phrase.edit(&ft)
-	let comment_str = self.get_comment_str()
-	let subject = comment_str . " Phrase: " . inputdialog("Phrase: ")
-	let sepalator = comment_str . repeat('=', 70)
-	let phrase = [ subject, sepalator ]
-	call extend(phrase, selection)
-	call extend(phrase, [""])
-	call append(0, phrase)
-	let cmd = "normal! 3ggV".(len(selection)-1)."jo"
-	execute cmd
+    let selection = getline(a:firstline, a:lastline)
+    call g:Phrase.edit(&ft)
+    let comment_str = self.get_comment_str()
+    let subject = comment_str . " Phrase: " . inputdialog("Phrase: ")
+    let sepalator = comment_str . repeat('=', 70)
+    let phrase = [ subject, sepalator ]
+    call extend(phrase, selection)
+    call extend(phrase, [""])
+    call append(0, phrase)
+    let cmd = "normal! 3ggV".(len(selection)-1)."jo"
+    execute cmd
 endfun
 
 fun! g:Phrase.list(...) range dict
-	let query = !empty(a:1) ? a:1 : &ft
+    let query = !empty(a:1) ? a:1 : &ft
 
-	belowright split
-	execute "edit ". tempname()
+    belowright split
+    execute "edit ". tempname()
 
-	let fname = self.phrase_filename(query)
-	let result = readfile(expand(g:phrase_dir . "/" . fname) )
-	let phrase_list = filter(result, 'v:val =~# " Phrase:"')
+    let fname = self.phrase_filename(query)
+    let result = readfile(expand(g:phrase_dir . "/" . fname) )
+    let phrase_list = filter(result, 'v:val =~# " Phrase:"')
 
-	call setline(1, phrase_list)
+    call setline(1, phrase_list)
 
-	" set read only
-	setlocal nomodifiable
-	set buftype=nofile
-	set bufhidden=hide
-	setlocal noswapfile
+    " set read only
+    setlocal nomodifiable
+    set buftype=nofile
+    set bufhidden=hide
+    setlocal noswapfile
 
-	let b:phrase = query
-	syn match PhraseMark '.*Phrase:'
-	hi def link PhraseMark Define
-	nnoremap <buffer> <CR> :<C-u>call g:Phrase.open(b:phrase)<CR>
+    let b:phrase = query
+    syn match PhraseMark '.*Phrase:'
+    hi def link PhraseMark Define
+    nnoremap <buffer> <CR> :<C-u>call g:Phrase.open(b:phrase)<CR>
 endfun
 
 fun! g:Phrase.open(query)
@@ -113,8 +113,8 @@ fun! g:Phrase.open(query)
 endfun
 
 " fun! g:Phrase.ext_candidate(...)
-    " let flist = split(glob(g:phrase_dir . "/*"), "\n")
-    " return map(flist, 'fnamemodify(v:val,":e")')
+" let flist = split(glob(g:phrase_dir . "/*"), "\n")
+" return map(flist, 'fnamemodify(v:val,":e")')
 " endfun
 
 fun! g:Phrase_ext_candidate(...)
@@ -123,15 +123,31 @@ fun! g:Phrase_ext_candidate(...)
 endfun
 
 fun! g:Phrase.edit(...)
-	let query = !empty(a:1) ? a:1 :
-				\ !empty(&ft) ?
-				\ &ft :
-				\ input("Filetype: ",'','customlist,g:Phrase_ext_candidate')
+    let query = !empty(a:1) ? a:1 :
+                \ !empty(&ft) ?
+                \ &ft :
+                \ input("Filetype: ",'','customlist,g:Phrase_ext_candidate')
 
-	let fname = self.phrase_filename(query)
-	belowright split
-	execute "edit " g:phrase_dir . "/" . fname
+    let fname = self.phrase_filename(query)
+    " belowright split
+    let phrase_file = g:phrase_dir . '/' . fname
+    " execute "edit " g:phrase_dir . "/" . fname
+
+    if s:select_bufferwin(phrase_file) == -1
+        execute 'belowright split ' . phrase_file
+    endif
 endfun
+
+function! s:select_bufferwin(bufname)
+    let expanded = expand(a:bufname)
+    let canonical_bufname = fnamemodify(expanded, ':p:~')
+    let winno = bufwinnr(canonical_bufname)
+    if winno != -1
+        execute winno . ':wincmd w'
+    endif
+    " echo winno
+    return winno
+endfunction
 
 " Create command
 "=================================================================

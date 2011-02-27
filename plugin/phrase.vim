@@ -68,10 +68,14 @@ fun! g:Phrase.phrase_filename(query) dict
 endfun
 
 fun! g:Phrase.create() range dict
+    let title = inputdialog("Phrase: ")
+    if empty(title) | return | endif
+
     let selection = getline(a:firstline, a:lastline)
-    call g:Phrase.edit(&ft)
     let comment_str = self.get_comment_str()
-    let subject = comment_str . " Phrase: " . inputdialog("Phrase: ")
+    call g:Phrase.edit(&ft)
+
+    let subject = comment_str . " Phrase: " . title
     let sepalator = comment_str . repeat('=', 70)
     let phrase = [ subject, sepalator ]
     call extend(phrase, selection)
@@ -99,15 +103,14 @@ fun! g:Phrase.list(...) range dict
 
 		let bufname = '[ phrase list ]'
 
-		call s:open_buffer(bufname)
-		nnoremap <buffer> q <C-w>c
-		setlocal bufhidden=hide buftype=nofile noswapfile
+    if s:select_bufferwin(bufname) == -1
+        call s:open_buffer(bufname)
+        nnoremap <buffer> q <C-w>c
+        setlocal bufhidden=hide buftype=nofile noswapfile
+    endif
+    silent normal! ggdG
     let phrase_list = filter(readfile(phrase_file), 'v:val =~# " Phrase:"')
-
     call setline(1, phrase_list)
-
-		" setlocal bufhidden=hide buftype=nofile noswapfile nobuflisted
-		nnoremap <buffer> q <C-w>c
 
     let b:phrase = query
     syn match PhraseMark '.*Phrase:'
@@ -141,17 +144,15 @@ fun! g:Phrase.edit(...)
     let fname = self.phrase_filename(query)
     " belowright split
     let phrase_file = g:phrase_dir . '/' . fname
-    " execute "edit " g:phrase_dir . "/" . fname
 
+    let phrase_file = fnamemodify(expand(phrase_file), ':p:~')
     if s:select_bufferwin(phrase_file) == -1
         call s:open_buffer(phrase_file)
     endif
 endfun
 
 function! s:select_bufferwin(bufname)
-    let expanded = expand(a:bufname)
-    let canonical_bufname = fnamemodify(expanded, ':p:~')
-    let winno = bufwinnr(canonical_bufname)
+    let winno = bufwinnr(a:bufname)
     if winno != -1
         execute winno . ':wincmd w'
     endif

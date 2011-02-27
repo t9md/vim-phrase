@@ -95,18 +95,18 @@ fun! g:Phrase.list(...) range dict
     let query = !empty(a:1) ? a:1 : &ft
 
     let fname = self.phrase_filename(query)
-		let phrase_file = expand(g:phrase_dir . "/" . fname)
-		if !filereadable(phrase_file)
-			echohl Type | echo "phrase file not readable" | echohl Normal
-			return
-		endif
+    let phrase_file = expand(g:phrase_dir . "/" . fname)
+    if !filereadable(phrase_file)
+        echohl Type | echo "phrase file not readable" | echohl Normal
+        return
+    endif
 
-		let bufname = '[ phrase list ]'
+    let bufname = '[ phrase list ]'
 
     if s:select_bufferwin(bufname) == -1
         call s:open_buffer(bufname)
         nnoremap <buffer> q <C-w>c
-        setlocal bufhidden=hide buftype=nofile noswapfile
+        setlocal bufhidden=hide buftype=nofile noswapfile nobuflisted
     endif
     silent normal! ggdG
     let phrase_list = filter(readfile(phrase_file), 'v:val =~# " Phrase:"')

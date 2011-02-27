@@ -91,6 +91,43 @@ function! s:open_buffer(filename)
   " return opt
 endfunction
 
+function! s:split()
+  let opt = winwidth(0) * 2 < winheight(0) * 5 ? "" : "vertical"
+	exe "belowright " . opt . " split"
+endfunction
+
+let s:phrase_list_buffer = '[ phrase list ]'
+let s:phrase_list_buffer_nr = -1
+
+fun! s:phrase_list_buffer_open()
+    let win = bufwinnr(s:phrase_list_buffer_nr)
+    if win != -1 " found!
+        execute win."wincmd w"
+        return
+    end
+
+    call s:split()
+    if s:phrase_list_buffer_nr == -1
+        execute 'edit ' . s:phrase_list_buffer
+        nnoremap <buffer> q <C-w>c
+        setlocal bufhidden=hide buftype=nofile noswapfile nobuflisted
+        let s:phrase_list_buffer_nr = bufnr('%')
+    else
+        execute 'silent buffer ' . s:phrase_buffer_nr
+    endif
+endfun
+
+function! s:phrase_list_refresh(file, query)
+    silent normal! gg"_dG
+    let phrase_list = filter(readfile(a:file), 'v:val =~# " Phrase:"')
+    call setline(1, phrase_list)
+
+    let b:phrase = a:query
+    syn match PhraseMark '.*Phrase:'
+    hi def link PhraseMark Define
+    nnoremap <buffer> <CR> :<C-u>call g:Phrase.open(b:phrase)<CR>
+endfunction
+
 fun! g:Phrase.list(...) range dict
     let query = !empty(a:1) ? a:1 : &ft
 
@@ -101,21 +138,8 @@ fun! g:Phrase.list(...) range dict
         return
     endif
 
-    let bufname = '[ phrase list ]'
-
-    if s:select_bufferwin(bufname) == -1
-        call s:open_buffer(bufname)
-        nnoremap <buffer> q <C-w>c
-        setlocal bufhidden=hide buftype=nofile noswapfile nobuflisted
-    endif
-    silent normal! ggdG
-    let phrase_list = filter(readfile(phrase_file), 'v:val =~# " Phrase:"')
-    call setline(1, phrase_list)
-
-    let b:phrase = query
-    syn match PhraseMark '.*Phrase:'
-    hi def link PhraseMark Define
-    nnoremap <buffer> <CR> :<C-u>call g:Phrase.open(b:phrase)<CR>
+    call s:phrase_list_buffer_open()
+    call s:phrase_list_refresh(phrase_file, query)
 endfun
 
 fun! g:Phrase.open(query)
@@ -124,11 +148,6 @@ fun! g:Phrase.open(query)
     call search(search)
     normal zt
 endfun
-
-" fun! g:Phrase.ext_candidate(...)
-" let flist = split(glob(g:phrase_dir . "/*"), "\n")
-" return map(flist, 'fnamemodify(v:val,":e")')
-" endfun
 
 fun! g:Phrase_ext_candidate(...)
     let flist = split(glob(g:phrase_dir . "/*"), "\n")
@@ -145,7 +164,7 @@ fun! g:Phrase.edit(...)
     " belowright split
     let phrase_file = g:phrase_dir . '/' . fname
 
-    let phrase_file = fnamemodify(expand(phrase_file), ':p:~')
+    let phrase_file = fnamemodify(expand(phrase_file), ':p')
     if s:select_bufferwin(phrase_file) == -1
         call s:open_buffer(phrase_file)
     endif

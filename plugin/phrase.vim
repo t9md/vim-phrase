@@ -81,23 +81,33 @@ fun! g:Phrase.create() range dict
     execute cmd
 endfun
 
+function! s:open_buffer(filename)
+  let opt = winwidth(0) * 2 < winheight(0) * 5 ? "" : "vertical"
+	exe "belowright " . opt . " split " . a:filename
+  " return opt
+endfunction
+
 fun! g:Phrase.list(...) range dict
     let query = !empty(a:1) ? a:1 : &ft
 
-    belowright split
-    execute "edit ". tempname()
-
     let fname = self.phrase_filename(query)
-    let result = readfile(expand(g:phrase_dir . "/" . fname) )
-    let phrase_list = filter(result, 'v:val =~# " Phrase:"')
+		let phrase_file = expand(g:phrase_dir . "/" . fname)
+		if !filereadable(phrase_file)
+			echohl Type | echo "phrase file not readable" | echohl Normal
+			return
+		endif
+
+		let bufname = '[ phrase list ]'
+
+		call s:open_buffer(bufname)
+		nnoremap <buffer> q <C-w>c
+		setlocal bufhidden=hide buftype=nofile noswapfile
+    let phrase_list = filter(readfile(phrase_file), 'v:val =~# " Phrase:"')
 
     call setline(1, phrase_list)
 
-    " set read only
-    setlocal nomodifiable
-    set buftype=nofile
-    set bufhidden=hide
-    setlocal noswapfile
+		" setlocal bufhidden=hide buftype=nofile noswapfile nobuflisted
+		nnoremap <buffer> q <C-w>c
 
     let b:phrase = query
     syn match PhraseMark '.*Phrase:'
@@ -134,7 +144,7 @@ fun! g:Phrase.edit(...)
     " execute "edit " g:phrase_dir . "/" . fname
 
     if s:select_bufferwin(phrase_file) == -1
-        execute 'belowright split ' . phrase_file
+        call s:open_buffer(phrase_file)
     endif
 endfun
 
@@ -145,7 +155,6 @@ function! s:select_bufferwin(bufname)
     if winno != -1
         execute winno . ':wincmd w'
     endif
-    " echo winno
     return winno
 endfunction
 

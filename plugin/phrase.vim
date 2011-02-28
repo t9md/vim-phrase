@@ -68,8 +68,8 @@ fun! g:Phrase.phrase_filename(query) dict
 endfun
 
 fun! g:Phrase.create() range dict
-    let title = inputdialog("Phrase: ")
-    if empty(title) | return | endif
+    let title = inputdialog("Phrase: ","", -1)
+    if title == -1 | return | endif
 
     let selection = getline(a:firstline, a:lastline)
     let comment_str = self.get_comment_str()

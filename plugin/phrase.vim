@@ -113,7 +113,7 @@ fun! s:phrase_list_buffer_open()
         setlocal bufhidden=hide buftype=nofile noswapfile nobuflisted
         let s:phrase_list_buffer_nr = bufnr('%')
     else
-        execute 'silent buffer ' . s:phrase_buffer_nr
+        execute 'silent buffer ' . s:phrase_list_buffer_nr
     endif
 endfun
 

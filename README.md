@@ -6,6 +6,7 @@ phrase.vim is utility for
   * recall by viewing useful phrase
 
 I mainly use this plugin for gather useful phrase for several programming languages.
+and intending to share several programming idiom with co-worker.
 
 Setting
 ================================
@@ -16,6 +17,23 @@ Setting
 or try
 
     let g:phrase_dir = "$HOME/.vim/bundle/phrase_example"
+
+If you want to share your phrase with other developers,
+ you can do by place your phrase yourname's directory.
+
+Assume TARO and HANAKO share their phrase each other.
+
+    # TARO's setting
+    let g:phrase_dir = "$HOME/.vim/phrase/taro"
+
+    # HANAKO's setting
+    let g:phrase_dir = "$HOME/.vim/phrase/hanako"
+
+Then TARO push his phrase directtory into git or other VCS.
+HANAKO olso push her phrase directtory into git or other VCS.
+That's it!.
+
+Shareing phrase folder by Dropbox is also good idea.
 
 Comment string setting
 ------------------------------------------------------------------
@@ -37,6 +55,9 @@ Keymap Example
      vnoremap <silent> <Leader>pe  :PhraseEdit<CR>
      vnoremap <silent> <Leader>pc  :PhraseCreate<CR>
 
+     " If you use Unite plugin
+     nnoremap <silent> <Space>p  :<C-u>Unite phrase -start-insert<CR>
+
 Usage
 -----------------------------------------------------------------
      " list phrase for &filetype then <CR> to jump.
@@ -55,3 +76,10 @@ Usage
 
      " visually select text to create new phrase, then
      :'<,'>PhraseCreate<CR>
+
+TODO
+-----------------------------------------------------------------
+* Wtite vim help file
+* Prepare or find someone who organize peoples public phrases into consolidated repository.
+* Enable unite plugin to search for specifying username(phrases owner)
+

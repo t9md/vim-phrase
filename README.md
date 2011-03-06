@@ -6,80 +6,110 @@ phrase.vim is utility for
   * recall by viewing useful phrase
 
 I mainly use this plugin for gather useful phrase for several programming languages.
-and intending to share several programming idiom with co-worker.
+And intending to share several programming idiom with co-worker.
 
-Setting
+Try
 ================================
-*required setting* each phrase file is stored under this directory
 
-    let g:phrase_dir = "$HOME/.vim/phrase"
+Create phrase directory.
+Copy phrase example file to that directory.
 
-or try
+      $ mkdir $HOME/.vim/phrase/$USER
+      $ copy phrase_example/* $HOME/.vim/phrase/$USER
 
-    let g:phrase_dir = "$HOME/.vim/bundle/phrase_example"
+Show phrase then enter to jump to that title
 
-If you want to share your phrase with other developers,
- you can do by place your phrase yourname's directory.
+      :Phraselist vim
 
+Visually select text in buffer then create phrase from that text.
+
+      :'<,'>PhraseCreate<CR>
+
+
+Share your phrase with others
+==============================
+SCENARIO
+-----------------------
 Assume TARO and HANAKO share their phrase each other.
 
-    # TARO's setting
-    let g:phrase_dir = "$HOME/.vim/phrase/taro"
+      # TARO's setting
+      let g:phrase_author = "taro"
 
-    # HANAKO's setting
-    let g:phrase_dir = "$HOME/.vim/phrase/hanako"
+      # HANAKO's setting
+      let g:phrase_author = "hanako"
 
-Then TARO push his phrase directtory into git or other VCS.
-HANAKO olso push her phrase directtory into git or other VCS.
-That's it!.
+* Taro pushes his phrase directory into git.
+* Hanako pushes his phrase directory into git.
+* Taro love Ruby and want to learn Python.
+* Hanako love Python and want to learn Ruby.
+* Taro pull Hanako's Python phrase from git, Hanako pull Taro's Ruby phrase from git,
+  helps learning new language more easily.
 
-Shareing phrase folder by Dropbox is also good idea.
+DROPBOX
+------------------------------------------------------------------------------
+Shareing phrase folder with Dropbox is another practical use case.
 
-Comment string setting
-------------------------------------------------------------------
-To change or add comment string for &filetype
-set following in .vimrc
-This comment string is used to comment out *Phrase:* header
+If you dont't want to .swp files be synced every time your collaborator
+view your phrase, disable making swap file in among all collaborators.
 
-    let g:phrase_commment = {}
-    let g:phrase_comment.vim = '"'
-    let g:phrase_comment.lua = '--'
+      au BufNewFile,BufRead */phrase/*/phrase.* setlocal noswapfile
+
+GITHUB
+------------------------------------------------------------------------------
+Publish your phrase to github helps other.
+My proposal about this type of repository name is ..
+
+#### Repository Name:
+  phrase-{your id}
+
+#### Layout:
+  put your phrases under 'phrase/{your id}/' sub directory.
+
+      phrase-t9md/phrase/t9md
+      phrase-t9md/phrase/t9md/phrase.vim
+      phrase-t9md/phrase/t9md/phrase.rb
+
+#### Example repository:
+  https://t9md@github.com/t9md/phrase-t9md.git
 
 Keymap Example
 -----------------------------------------------------------------
-     " mapleader default is '\', I use ',' instead.
-     let mapleader = ","
-     nnoremap <silent> <Leader>pl  :PhraseList<CR>
-     vnoremap <silent> <Leader>pl  :<C-u>PhraseList<CR>
-     nnoremap <silent> <Leader>pe  :PhraseEdit<CR>
-     vnoremap <silent> <Leader>pe  :PhraseEdit<CR>
-     vnoremap <silent> <Leader>pc  :PhraseCreate<CR>
 
-     " If you use Unite plugin
-     nnoremap <silent> <Space>p  :<C-u>Unite phrase -start-insert<CR>
+        " mapleader default is '\', I use ',' instead.
+        let mapleader = ","
+        nnoremap <silent> <Leader>pl  :PhraseList<CR>
+        nnoremap <silent> <Leader>pe  :PhraseEdit<CR>
+        vnoremap <silent> <Leader>pe  :PhraseEdit<CR>
+        vnoremap <silent> <Leader>pc  :PhraseCreate<CR>
+        vnoremap <silent> <Leader>pl  :<C-u>PhraseList<CR>
+
+        " If you use Unite plugin
+        nnoremap <silent> <Space>p  :<C-u>Unite phrase -start-insert<CR>
 
 Usage
 -----------------------------------------------------------------
-     " list phrase for &filetype then <CR> to jump.
-     :PhaseList ruby
-     " specifying extention is OK
-     :PhaseList rb
-     " if you ommit arg, current &filetype's phrase is opend
-     :PhaseList
 
-     " Directly edit phrase file by
-     :PhaseEdit ruby
-     " specifying extention is OK
-     :PhaseEdit pl
-     " if you ommit arg, current &filetype's phrase is opend
-     :PhaseEdit
+        " show Ruby's phrase list
+        :PhaseList ruby
 
-     " visually select text to create new phrase, then
-     :'<,'>PhraseCreate<CR>
+        " show Ruby's phrase list(by specifying extension)
+        :PhaseList rb
 
-TODO
------------------------------------------------------------------
-* Wtite vim help file
-* Prepare or find someone who organize peoples public phrases into consolidated repository.
-* Enable unite plugin to search for specifying username(phrases owner)
+        " show phrase list of current &filetype
+        :PhaseList
 
+        " Edit Ruby's phrase
+        :PhaseEdit ruby
+
+        " Edit Perl's phrase(by specifying extension)
+        :PhaseEdit pl
+
+        " Edit phrase of current &filetype
+        :PhaseEdit
+
+        " Create phrase from selected text(=range)
+        :'<,'>PhraseCreate<CR>
+
+Latest Version
+----------------------------------
+http://github.com/t9md/vim-phrase

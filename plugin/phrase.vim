@@ -5,25 +5,11 @@
 " WebPage: http://github.com/t9md/vim-phrase
 " License: BSD
 " Usage:
-"   to change or add comment string for filetype
-"   set Phrase_comment_str in your .vimrc
-"
-"   let g:phrase_dir = "$HOME/.vim/phrase"
-"
-"   Comment string setting
-"   ------------------------------------------------------------------
-"   let g:phrase_commment = {}
-"   let g:phrase_comment.vim = '"'
-"   let g:phrase_comment.lua = '--'
-"
-"   Keymap Example
-"   -----------------------------------------------------------------
-"    let mapleader = ","
-"    nnoremap <silent> <Leader>pl  :PhraseList<CR>
-"    vnoremap <silent> <Leader>pl  :<C-u>PhraseList<CR>
-"    nnoremap <silent> <Leader>pe  :PhraseEdit<CR>
-"    vnoremap <silent> <Leader>pe  :PhraseEdit<CR>
-"    vnoremap <silent> <Leader>pc  :PhraseCreate<CR>
+
+if exists('g:loaded_phrase')
+  finish
+endif
+let g:loaded_phrase = 1
 
 "for line continuation - i.e dont want C in &cpo
 let s:old_cpo = &cpo
@@ -32,6 +18,17 @@ set cpo&vim
 " Main
 "=================================================================
 let g:Phrase = {}
+
+if !exists('g:phrase_author')
+  let g:phrase_author = "$USER"
+endif
+
+if !exists('g:phrase_basedir')
+  let g:phrase_basedir = split(&rtp,',')[0] . "/" . "phrase"
+endif
+
+
+let g:phrase_dir = expand(g:phrase_basedir . '/'. g:phrase_author)
 
 let s:default_comment = {
             \"vim": '"',
@@ -132,7 +129,7 @@ fun! g:Phrase.list(...) range dict
     let query = !empty(a:1) ? a:1 : &ft
 
     let fname = self.phrase_filename(query)
-    let phrase_file = expand(g:phrase_dir . "/" . fname)
+    let phrase_file = expand(g:phrase_dir ."/" . fname)
     if !filereadable(phrase_file)
         echohl Type | echo "phrase file not readable" | echohl Normal
         return
@@ -149,12 +146,19 @@ fun! g:Phrase.open(query)
     normal zt
 endfun
 
-fun! g:Phrase_ext_candidate(...)
-    let flist = split(glob(g:phrase_dir . "/*"), "\n")
-    return map(flist, 'fnamemodify(v:val,":e")')
-endfun
+" fun! g:Phrase_ext_candidate(...)
+    " let flist = split(glob(g:phrase_dir."/" . g:phrase_author . "/*"), "\n")
+    " return map(flist, 'fnamemodify(v:val,":e")')
+" endfun
 
 fun! g:Phrase.edit(...)
+  if !isdirectory(g:phrase_dir)
+    let answer = input("create " . g:phrase_dir . "?[y/n] ")
+    if answer == 'y'
+      call mkdir(g:phrase_dir, 'p')
+    end
+  endif
+
     let query = !empty(a:1) ? a:1 :
                 \ !empty(&ft) ?
                 \ &ft :

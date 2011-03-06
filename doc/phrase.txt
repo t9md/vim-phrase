@@ -1,0 +1,206 @@
+*phrase.txt*	gather useful phrase, refer it whenever you want
+
+Version: 0.1
+Author : t9md <taqumd@gmail.com>
+
+==============================================================================
+CONTENTS					*phrase-contents*
+
+Introduction				    |phrase-introduction|
+Usage					    |phrase-usage|
+Interface				    |phrase-interface|
+  Commmands					|phrase-commands|
+  Keymap					|phrase-keymap|
+  Unite plugin					|phrase-unite|
+Variables	        			|phrase-variables|
+Configuration Examples		     	    |phrase-examples|
+ToDo					    |phrase-todo|
+Bugs					    |phrase-bugs|
+Changelog				    |phrase-changelog|
+
+==============================================================================
+Introduction						*phrase-introduction*
+
+*phrase* is Vim plugin to help gathering useful phrase of several programming
+languages. You can refer it conveniently while you are programming.
+
+Requirement:
+- Vim 7.2 or later
+
+Latest Version:
+http://github.com/t9md/vim-phrase
+
+==============================================================================
+USAGE						*phrase-usage*
+>
+	" show Ruby's phrase list
+	:PhaseList ruby
+
+	" show Ruby's phrase list(by specifying extension)
+	:PhaseList rb
+
+	" show phrase list of current &filetype
+	:PhaseList
+
+	" Edit Ruby's phrase
+	:PhaseEdit ruby
+
+	" Edit Perl's phrase(by specifying extension)
+	:PhaseEdit pl
+
+	" Edit phrase of current &filetype
+	:PhaseEdit
+
+	" Create phrase from selected text(=range)
+	:'<,'>PhraseCreate<CR>
+
+==============================================================================
+INTERFACE					*phrase-interface*
+
+------------------------------------------------------------------------------
+COMMANDS						*phrase-commands*
+
+:PhraseList [lang]					 *:PhraseList*
+	Show phrase-list of specified launguage.
+	If lang is ommited. current |&filetype|is used.
+
+:PhraseEdit [lang]					 *:PhraseEdit*
+	Edit phrase of specified launguage.
+	If lang is ommited. current |&filetype|is used.
+
+:[range]PhraseCreate [lang]				 *:PhraseCreate*
+	Create new phrase from current |:range|.
+
+------------------------------------------------------------------------------
+KEYMAP EXAMPLE 						*phrase-keymap*
+>
+	" mapleader default is '\', I use ',' instead.
+	let mapleader = ","
+	nnoremap <silent> <Leader>pl  :PhraseList<CR>
+	nnoremap <silent> <Leader>pe  :PhraseEdit<CR>
+	vnoremap <silent> <Leader>pe  :PhraseEdit<CR>
+	vnoremap <silent> <Leader>pc  :PhraseCreate<CR>
+	vnoremap <silent> <Leader>pl  :<C-u>PhraseList<CR>
+
+	" If you use Unite plugin
+	nnoremap <silent> <Space>p  :<C-u>Unite phrase -start-insert<CR>
+
+------------------------------------------------------------------------------
+UNITE PLUGIN					 *phrase-unite*
+
+Phrase provide |unite.vim| plugin to quickly access each phrase by search
+phrase title incrementally.
+
+Try
+>
+	:Unite phrase
+<
+or Set key map like bellow
+>
+	nnoremap <silent> <Space>p  :<C-u>Unite phrase -start-insert<CR>
+==============================================================================
+COLLABORATE						  *phrase-collaborate*
+------------------------------------------------------------------------------
+EXAMPLE						  *phrase-collaborate-example*
+------------------------------------------------------------------------------
+Assume TARO and HANAKO share their phrase each other.
+>
+	# TARO's setting
+	let g:phrase_author = "taro"
+
+	# HANAKO's setting
+	let g:phrase_author = "hanako"
+<
+* Taro pushes his phrase directory into git.
+* Hanako pushes his phrase directory into git.
+* Taro love Ruby and want to learn Python.
+* Hanako love Python and want to learn Ruby.
+* Taro pull Hanako's Python phrase from git, Hanako pull Taro's Ruby phrase from git,
+  helps learning new language more easily.
+
+DROPBOX						  *phrase-collaborate-dropbox*
+------------------------------------------------------------------------------
+Shareing phrase folder with Dropbox is another practical use case.
+
+If you dont't want to .swp files be synced every time your collaborator
+view your phrase, disable making swap file in among all collaborators.
+>
+    au BufNewFile,BufRead */phrase/*/phrase.* setlocal noswapfile
+
+GITHUB						  *phrase-collaborate-github*
+------------------------------------------------------------------------------
+Publish your phrase to github helps other.
+My proposal about this type of repository name is ..
+
+Repository Name:
+  phrase-{your id}
+
+Layout:
+  put your phrases under 'phrase/{your id}/' sub directory.
+
+>
+	phrase-t9md/phrase/t9md
+	phrase-t9md/phrase/t9md/phrase.vim
+	phrase-t9md/phrase/t9md/phrase.rb
+<
+
+Example repository:
+  https://t9md@github.com/t9md/phrase-t9md.git
+
+==============================================================================
+VARIABLES					 *phrase-variables*
+
+g:phrase_author					*g:phrase_author*
+		Your identifier of phrase. this variable is used to identify
+		your phrase from several subdirectory under |g:phrase_basedir|.
+
+		Default value $USER
+
+g:phrase_basedir					*g:phrase_basedir*
+		Base directory where phrases reside in
+
+		Default value $HOME/.vim/phrase
+
+
+g:phrase_comment				*g:phrase_comment*
+		Dictionary used to determine one-line comment notation of
+		specific &filetype.
+
+		Example >
+		let s:default_comment = {
+			    \ "vim": '"',
+			    \ "ruby": "#",
+			    \ }
+<
+		Default value refer plugin/phrase.vim
+
+g:phrase_ft2ext					*g:phrase_ft2ext*
+		Dictionary used to determine extension from &filetype
+
+		Default value refer plugin/phrase.vim
+
+EXAMPLE
+>
+	let g:phrase_basedir = "$HOME/.vim/phrase"
+	let g:phrase_comment = {}
+	let g:phrase_comment.vim = '"'
+	let g:phrase_comment.lua = '--'
+	let g:phrase_ft2ext = {}
+	let g:phrase_ft2ext.perl = "pl"
+<
+
+==============================================================================
+TODO						*phrase-todo*
+
+* add major programming language's ft2ext mapping
+* add major programming language's one-line comment string.
+* Support languages which don't have one line based comment.
+
+==============================================================================
+BUGS						*phrase-bugs*
+
+==============================================================================
+CHANGELOG					*phrase-changelog*
+
+0.1	2011-03-06
+	- First release

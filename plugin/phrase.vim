@@ -36,6 +36,7 @@ let s:default_comment = {
             \"perl": "#",
             \"sh": "#",
             \"python": "#",
+            \"lua": "--",
             \"javascript": "//",
             \}
 

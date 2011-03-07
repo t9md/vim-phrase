@@ -32,6 +32,7 @@ let g:phrase_dir = expand(g:phrase_basedir . '/'. g:phrase_author)
 
 let s:default_comment = {
             \"vim": '"',
+            \"vim": '"',
             \"ruby": "#",
             \"perl": "#",
             \"sh": "#",
@@ -42,6 +43,7 @@ let s:default_comment = {
 
 let s:default_ft2ext = {
             \ 'perl': 'pl',
+            \ 'puppet': 'pp',
             \ 'ruby': 'rb',
             \ 'python': 'py',
             \ 'javascript': 'js',

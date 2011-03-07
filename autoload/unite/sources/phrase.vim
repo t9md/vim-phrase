@@ -6,7 +6,7 @@ function! s:unite_source.gather_candidates(args, context)
     return []
   endif
   " [ author , path ]
-  let phrase_list = map(split(globpath(&runtimepath, 'phrase/*/'. g:Phrase.phrase_filename(&ft)), '\n'),
+  let phrase_list = map(split(globpath(&runtimepath, 'phrase/*/'. g:Phrase.filename(&ft)), '\n'),
         \'[ fnamemodify(v:val, ":h:t"), fnamemodify(v:val, ":p")]')
 
   let phrase_candidate = []
@@ -25,7 +25,7 @@ function! s:prepare_candidate(author, phrase_file)
     let str = lines[n]
     if str =~# s:phrase_anchor
       let phrase = {
-            \   "word": "[".a:author."] ". substitute(str,'\(.* Phrase: \)','',''),
+            \   "word": "[".a:author."] ". g:Phrase.strip_comment(str, &ft),
             \   "source": "phrase",
             \   "kind": "jump_list",
             \   "action__path": a:phrase_file,

@@ -12,8 +12,8 @@ Interface				    |phrase-interface|
   Commmands					|phrase-commands|
   Keymap					|phrase-keymap|
   Unite plugin					|phrase-unite|
-Variables	        			|phrase-variables|
-Configuration Examples		     	    |phrase-examples|
+Variables					|phrase-variables|
+Configuration Examples			    |phrase-examples|
 ToDo					    |phrase-todo|
 Bugs					    |phrase-bugs|
 Changelog				    |phrase-changelog|
@@ -31,7 +31,7 @@ Latest Version:
 http://github.com/t9md/vim-phrase
 
 ==============================================================================
-USAGE						*phrase-usage*
+USAGE								*phrase-usage*
 >
 	" show Ruby's phrase list
 	:PhaseList ruby
@@ -55,7 +55,7 @@ USAGE						*phrase-usage*
 	:'<,'>PhraseCreate<CR>
 
 ==============================================================================
-INTERFACE					*phrase-interface*
+INTERFACE						*phrase-interface*
 
 ------------------------------------------------------------------------------
 COMMANDS						*phrase-commands*
@@ -72,7 +72,7 @@ COMMANDS						*phrase-commands*
 	Create new phrase from current |:range|.
 
 ------------------------------------------------------------------------------
-KEYMAP EXAMPLE 						*phrase-keymap*
+KEYMAP EXAMPLE						*phrase-keymap*
 >
 	" mapleader default is '\', I use ',' instead.
 	let mapleader = ","
@@ -86,7 +86,7 @@ KEYMAP EXAMPLE 						*phrase-keymap*
 	nnoremap <silent> <Space>p  :<C-u>Unite phrase -start-insert<CR>
 
 ------------------------------------------------------------------------------
-UNITE PLUGIN					 *phrase-unite*
+UNITE PLUGIN						 *phrase-unite*
 
 Phrase provide |unite.vim| plugin to quickly access each phrase by search
 phrase title incrementally.
@@ -148,9 +148,9 @@ Example repository:
   https://github.com/t9md/phrase-t9md
 
 ==============================================================================
-VARIABLES					 *phrase-variables*
+VARIABLES						 *phrase-variables*
 
-g:phrase_author					*g:phrase_author*
+g:phrase_author						*g:phrase_author*
 		Your identifier of phrase. this variable is used to identify
 		your phrase from several subdirectory under |g:phrase_basedir|.
 
@@ -161,46 +161,52 @@ g:phrase_basedir					*g:phrase_basedir*
 
 		Default value $HOME/.vim/phrase
 
+g:phrase_ft_tbl						*g:phrase_ft_tbl*
 
-g:phrase_comment				*g:phrase_comment*
-		Dictionary used to determine one-line comment notation of
-		specific &filetype.
+		Dictionary used to customize or add new filetype
+
+		Default value not exist
+
+		Each entry has following fields
+
+		  { filetype: { "ext": FILE_EXTENSION, "cmt": [CMT_L, CMT_R] }
+
+		    * FILE_EXTENSION(required)
+		    * CMT_L(required)
+		    * CMT_R(optional)
 
 		Example >
-		let s:default_comment = {
-			    \ "vim": '"',
-			    \ "ruby": "#",
-			    \ }
+>
+		let g:phrase_ft_tbl = {}
+		let g:phrase_ft_tbl.lua = {}
+
+		let g:phrase_ft_tbl.lua.cmt = ['--']
+		" ext is file's extension
+		let g:phrase_ft_tbl.lua.ext = 'lua'
+		let g:phrase_ft_tbl = {
+			   \"c": { "ext": "c", "cmt": ["/*", "*/"] }
+			   \ }
 <
-		Default value refer plugin/phrase.vim
-
-g:phrase_ft2ext					*g:phrase_ft2ext*
-		Dictionary used to determine extension from &filetype
-
-		Default value refer plugin/phrase.vim
-
 EXAMPLE
 >
+	let g:phrase_auther  = "t9md"
 	let g:phrase_basedir = "$HOME/.vim/phrase"
-	let g:phrase_comment = {}
-	let g:phrase_comment.vim = '"'
-	let g:phrase_comment.lua = '--'
-	let g:phrase_ft2ext = {}
-	let g:phrase_ft2ext.perl = "pl"
 <
 
 ==============================================================================
-TODO						*phrase-todo*
+TODO							*phrase-todo*
 
 * add major programming language's ft2ext mapping
 * add major programming language's one-line comment string.
 * Support languages which don't have one line based comment.
 
 ==============================================================================
-BUGS						*phrase-bugs*
+BUGS							*phrase-bugs*
 
 ==============================================================================
-CHANGELOG					*phrase-changelog*
+CHANGELOG						*phrase-changelog*
 
 0.1	2011-03-06
 	- First release
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

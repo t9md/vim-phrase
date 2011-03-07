@@ -333,7 +333,9 @@ function! s:init_ft_tbl() "{{{
     let [ft, ext; cmt] =  split(ent,'\s\+')
     let s:ft_tbl[ft] = { 'ext': ext, 'cmt': cmt }
   endfor
-  if !exists('g:phrase_ft_tbl') | g:phrase_ft_tbl = {} | endif
+  if !exists('g:phrase_ft_tbl')
+    g:phrase_ft_tbl = {}
+  endif
   call extend(s:ft_tbl, g:phrase_ft_tbl, "force")
 endfunction "}}}
 

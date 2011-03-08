@@ -235,6 +235,8 @@ let s:ft_data = [
       \ ' psf               psf         #                    ',
       \ ' ptcap             ptcap       #                    ',
       \ ' python            py          #                    ',
+      \ ' perl              pl          #                    ',
+      \ ' puppet            pp          #                    ',
       \ ' r                 r           #                    ',
       \ ' radiance          radiance    #                    ',
       \ ' ratpoison         ratpoison   #                    ',

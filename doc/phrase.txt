@@ -1,6 +1,6 @@
 *phrase.txt*	gather useful phrase, refer it whenever you want
 
-Version: 0.1
+Version: 0.2
 Author : t9md <taqumd@gmail.com>
 
 ==============================================================================

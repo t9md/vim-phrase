@@ -4,7 +4,7 @@
 " Version: 0.1.2
 " WebPage: http://github.com/t9md/vim-phrase
 " License: BSD
-" Usage:
+" Version: 0.2
 
 " GUARD: {{{
 "============================================================

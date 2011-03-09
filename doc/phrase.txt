@@ -215,6 +215,7 @@ CHANGELOG						*phrase-changelog*
           Use g:phrase_auther and g:phrase_basedir
           Use g:phrase_ft_tbl to customise filetype extension map and comment
           string.
+	- Eliminate comment string when creating PhraseList.
 0.1	2011-03-06
 	- First release
 ==============================================================================

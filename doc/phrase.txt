@@ -203,9 +203,18 @@ TODO							*phrase-todo*
 ==============================================================================
 BUGS							*phrase-bugs*
 
+* File type and extension matching not precise.
+
 ==============================================================================
 CHANGELOG						*phrase-changelog*
 
+0.2	2011-03-10
+	- Support multiple languages
+	- Change configuration variables.
+          g:phrase_dir is no longer used.
+          Use g:phrase_auther and g:phrase_basedir
+          Use g:phrase_ft_tbl to customise filetype extension map and comment
+          string.
 0.1	2011-03-06
 	- First release
 ==============================================================================

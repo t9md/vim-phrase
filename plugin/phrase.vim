@@ -418,13 +418,13 @@ function! g:Phrase.strip_comment(str, ft) "{{{
   return s:strip(substitute(str,ptn,'\1',''))
 endfunction "}}}
 function! g:Phrase.create() range "{{{
-  " let title = inputdialog("Phrase: ","", -1)
-  " if title == -1 | return | endif
+  let title = inputdialog("Phrase: ","", -1)
+  if title == -1 | return | endif
 
-  echohl Function
-  let title = input("Phrase: ")
-  echohl Normal
-  if empty(title)| return | endif
+  " echohl Function
+  " let title = input("Phrase: ")
+  " echohl Normal
+  " if empty(title)| return | endif
 
   let selection = getline(a:firstline, a:lastline)
   let ft = &ft

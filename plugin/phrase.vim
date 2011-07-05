@@ -8,6 +8,7 @@
 
 " GUARD: {{{
 "============================================================
+
 " if exists('g:loaded_phrase')
   " finish
 " endif
@@ -22,17 +23,21 @@ let s:separator = repeat('=', 70)
 let s:phrase_list_buffer = '[ phrase list ]'
 let s:phrase_list_buffer_nr = -1
 
-function! s:set_gvar(varname, default) "{{{
-	if !exists(a:varname)
-		let cmd = 'let ' . a:varname . "=\"" . a:default ."\""
-    exe cmd
-	endif
+function! s:set_var(varname, default) "{{{
+    if !exists(a:varname)
+        let {a:varname} = a:default
+    endif
 endfunction "}}}
+
+" let s:is_windows = has('win16') || has('win32') || has('win64')
+" let s:dot_vimdir = s:is_windows ? expand(
 function! s:init() "{{{
-	call s:set_gvar('g:phrase_author', "$USER")
-  call s:set_gvar('g:phrase_basedir', split(&rtp,',')[0] . "/" . "phrase")
-  let g:phrase_dir = expand(g:phrase_basedir . '/'. g:phrase_author)
+    call s:set_var('g:phrase_author', "$USER")
+    call s:set_var('g:phrase_basedir', split(&rtp,',')[0] . "/" . "phrase")
+    call s:set_var('g:phrase_ft_tbl', {})
+    call s:set_var('g:phrase_dir', expand(g:phrase_basedir . '/'. g:phrase_author))
 endfunction "}}}
+
 " filetype data {{{
 "
 " FORMAT:
@@ -330,45 +335,38 @@ let s:ft_data = [
       \ ' z8a               z8a         ;                    '
       \ ]
 "}}}
+
 function! s:init_ft_tbl() "{{{
   for ent in s:ft_data
     let [ft, ext; cmt] =  split(ent,'\s\+')
     let s:ft_tbl[ft] = { 'ext': ext, 'cmt': cmt }
   endfor
-  if !exists('g:phrase_ft_tbl')
-    g:phrase_ft_tbl = {}
-  endif
   call extend(s:ft_tbl, g:phrase_ft_tbl, "force")
 endfunction "}}}
 
 function! s:get_ft_tbl(ft) "{{{
     return get(s:ft_tbl, a:ft, {"ext": a:ft , "cmt": ["#"] })
 endfunction "}}}
-function! s:commentfy(ft, str) "{{{
-  let tbl   = s:get_ft_tbl(a:ft)
-  let cmt_l = get(tbl.cmt, 0, "#")
-  let cmt_r = get(tbl.cmt, 1, "")
-  if !empty(cmt_r)
-    let result = join([cmt_l, a:str, cmt_r], " ")
-  else
-    let result = join([cmt_l, a:str], " ")
-  endif
-  return result
+
+function! s:commentify(ft, str) "{{{
+  let cmt = copy(s:get_ft_tbl(a:ft).cmt)
+  return join(insert(cmt, a:str, 1), " ")
 endfunction "}}}
+
 function! s:strip(str) "{{{
   return substitute(a:str, '^\s*\(.\{-}\)\s*$', '\1', '')
 endfunction "}}}
+
 function! s:ext(ft) "{{{
   return s:get_ft_tbl(a:ft).ext
 endfunction "}}}
-function! s:open_buffer(filename) "{{{
-  let opt = winwidth(0) * 2 < winheight(0) * 5 ? "" : "vertical"
-	exe "belowright " . opt . " split " . a:filename
+
+function! s:split(...) "{{{
+    let file = a:0 > 0 ? a:1 : ""
+    let opt = winwidth(0) * 2 < winheight(0) * 5 ? "" : "vertical"
+    exe "belowright " . opt . " split " . file
 endfunction "}}}
-function! s:split() "{{{
-  let opt = winwidth(0) * 2 < winheight(0) * 5 ? "" : "vertical"
-	exe "belowright " . opt . " split"
-endfunction "}}}
+
 function! s:open_listwin() "{{{
   let win = bufwinnr(s:phrase_list_buffer_nr)
   if win != -1 " found!
@@ -386,6 +384,7 @@ function! s:open_listwin() "{{{
     execute 'silent buffer ' . s:phrase_list_buffer_nr
   endif
 endfunction "}}}
+
 function! s:refresh_list(file, ft) "{{{
   silent normal! gg"_dG
   let phrase_list = filter(readfile(a:file), 'v:val =~# " Phrase:"')
@@ -397,6 +396,7 @@ function! s:refresh_list(file, ft) "{{{
   hi def link PhraseMark Define
   nnoremap <buffer> <CR> :<C-u>call g:Phrase.open(b:phrase_ft)<CR>
 endfunction "}}}
+
 function! s:select_bufferwin(bufname) "{{{
   let winno = bufwinnr(a:bufname)
   if winno != -1
@@ -409,6 +409,7 @@ let g:Phrase = {}
 function! g:Phrase.filename(ft) "{{{
 	return join([ "phrase", s:ext(a:ft) ], ".")
 endfunction "}}}
+
 function! g:Phrase.strip_comment(str, ft) "{{{
   let cmt = s:get_ft_tbl(a:ft).cmt
   let cmt_l = get(cmt, 0)
@@ -417,6 +418,7 @@ function! g:Phrase.strip_comment(str, ft) "{{{
   let ptn = '^'. escape(cmt_l, '*') .'\s\+Phrase:\s\+\(.*\)'. escape(cmt_r, '*') . '$'
   return s:strip(substitute(str,ptn,'\1',''))
 endfunction "}}}
+
 function! g:Phrase.create() range "{{{
   let title = inputdialog("Phrase: ","", -1)
   if title == -1 | return | endif
@@ -431,14 +433,16 @@ function! g:Phrase.create() range "{{{
   call g:Phrase.edit(&ft)
 
   let subject   = " Phrase: " . title
-  let phrase = map([ subject, s:separator ], 's:commentfy(ft, v:val)')
+  let phrase = map([ subject, s:separator ], 's:commentify(ft, v:val)')
   call append(0, phrase + selection + [""])
   let cmd = "normal! 3ggV".(len(selection)-1)."jo"
   execute cmd
 endfunction "}}}
+
 function! g:Phrase.path(ft) "{{{
     return expand(g:phrase_dir ."/" . self.filename(a:ft))
 endfunction "}}}
+
 function! g:Phrase.list(...) range "{{{
   let ft = !empty(a:1) ? a:1 : &ft
 
@@ -450,12 +454,14 @@ function! g:Phrase.list(...) range "{{{
   call s:open_listwin()
   call s:refresh_list(phrase_file, ft)
 endfunction "}}}
+
 function! g:Phrase.open(ft) "{{{
   let search = getline('.')
   call g:Phrase.edit(a:ft)
   call search(search)
   normal zt
 endfunction "}}}
+
 function! g:Phrase.edit(...) "{{{
   if !isdirectory(g:phrase_dir)
     let answer = input("create " . g:phrase_dir . "?[y/n] ")
@@ -473,7 +479,7 @@ function! g:Phrase.edit(...) "{{{
   let phrase_file = self.path(ft)
   let phrase_file = fnamemodify(expand(phrase_file), ':p')
   if s:select_bufferwin(phrase_file) == -1
-    call s:open_buffer(phrase_file)
+    call s:split(phrase_file)
   endif
 endfunction "}}}
 
@@ -481,7 +487,7 @@ let s:dev_mode = 0
 function! s:test(ft, str) "{{{
   echo "ft   : " . a:ft
   echo "ext  : " . s:ext(a:ft)
-  echo "cmted: " . s:commentfy(a:ft, a:str)
+  echo "cmted: " . s:commentify(a:ft, a:str)
   echo ""
 endfunction "}}}
 function! s:run_test() "{{{
@@ -496,6 +502,7 @@ function! s:run_test() "{{{
   let ft = 'notexist'  |call s:test(ft, str)
   let ft = ''          |call s:test(ft, str)
 endfunction "}}}
+" let s:dev_mode = 1
 if s:dev_mode == 1 "{{{
   call s:run_test()
   finish

@@ -70,7 +70,8 @@ My proposal about this type of repository name is ..
       phrase-t9md/phrase/t9md/phrase.rb
 
 #### Example repository:
-  https://t9md@github.com/t9md/phrase-t9md.git
+
+https://github.com/t9md/phrase-t9md
 
 Keymap Example
 -----------------------------------------------------------------

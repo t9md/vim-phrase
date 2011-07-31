@@ -29,8 +29,6 @@ function! s:set_var(varname, default) "{{{
     endif
 endfunction "}}}
 
-" let s:is_windows = has('win16') || has('win32') || has('win64')
-" let s:dot_vimdir = s:is_windows ? expand(
 function! s:init() "{{{
     call s:set_var('g:phrase_author', "$USER")
     call s:set_var('g:phrase_basedir', split(&rtp,',')[0] . "/" . "phrase")
@@ -434,7 +432,8 @@ function! g:Phrase.strip_comment(str, ft) "{{{
 endfunction "}}}
 
 function! g:Phrase.create() range "{{{
-  let title = inputdialog("Phrase: ","", -1)
+  let ft = s:phrase_filetype_for("")
+  let title = inputdialog("Phrase[ " . ft . " ]","", -1)
   if title == -1 | return | endif
 
   " echohl Function
@@ -443,8 +442,7 @@ function! g:Phrase.create() range "{{{
   " if empty(title)| return | endif
 
   let selection = getline(a:firstline, a:lastline)
-  let ft = &ft
-  call g:Phrase.edit(&ft)
+  call g:Phrase.edit(ft)
 
   let subject   = " Phrase: " . title
   let phrase = map([ subject, s:separator ], 's:commentify(ft, v:val)')

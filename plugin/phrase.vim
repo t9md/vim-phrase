@@ -405,6 +405,20 @@ function! s:select_bufferwin(bufname) "{{{
   return winno
 endfunction "}}}
 
+function! s:phrase_filetype_for(query) "{{{
+  let ft = 
+        \ !empty(a:query)
+        \ ? a:query
+        \ : exists('b:phrase_filetype') && !empty('b:phrase_filetype')
+        \ ? b:phrase_filetype
+        \ : &ft
+  return ft
+endfunction "}}}
+
+function! s:set_phrase_filetype(line) "{{{
+  let b:phrase_filetype = matchstr(a:line,'phrase: \zs.*')
+endfunction "}}}
+
 let g:Phrase = {}
 function! g:Phrase.filename(ft) "{{{
 	return join([ "phrase", s:ext(a:ft) ], ".")
@@ -444,7 +458,7 @@ function! g:Phrase.path(ft) "{{{
 endfunction "}}}
 
 function! g:Phrase.list(...) range "{{{
-  let ft = !empty(a:1) ? a:1 : &ft
+  let ft = s:phrase_filetype_for(a:1)
 
   let phrase_file = self.path(ft)
   if !filereadable(phrase_file)
@@ -470,7 +484,7 @@ function! g:Phrase.edit(...) "{{{
     end
   endif
 
-  let ft = !empty(a:1) ? a:1 : &ft
+  let ft = s:phrase_filetype_for(a:1)
   if empty(ft)
       let ft = input("Filetype: ",'')
   endif
@@ -510,6 +524,11 @@ endif "}}}
 
 call s:init()
 call s:init_ft_tbl()
+
+augroup Phrase
+    autocmd!
+    autocmd BufReadPost * if getline('$') =~ "phrase: " | call <SID>set_phrase_filetype(getline('$')) | endif
+augroup END
 
 " for [key, val ] in items(s:ft_tbl)
     " echo [key, val]

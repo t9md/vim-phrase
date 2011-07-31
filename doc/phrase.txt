@@ -208,6 +208,8 @@ BUGS							*phrase-bugs*
 ==============================================================================
 CHANGELOG						*phrase-changelog*
 
+0.3	2011-07-31
+	- introduce 'b:phrase_filetype' var.
 0.2	2011-03-10
 	- Support multiple languages
 	- Change configuration variables.

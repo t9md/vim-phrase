@@ -1,12 +1,22 @@
 let s:unite_source = {}
 let s:unite_source.name = 'phrase'
+let s:unite_source.hooks = {}
 let s:phrase_anchor = " Phrase:"
+
+function! s:unite_source.hooks.on_init(args, context) "{{{
+  let a:context.source__filetype =  exists('b:phrase_filetype') && !empty('b:phrase_filetype')
+        \ ? b:phrase_filetype
+        \ : &ft
+endfunction"}}}
+
 function! s:unite_source.gather_candidates(args, context)
-  if empty(&ft)
+  if empty(a:context.source__filetype)
     return []
   endif
+  call unite#print_message("[phrase]: " . a:context.source__filetype)
+
   " [ author , path ]
-  let phrase_list = map(split(globpath(&runtimepath, 'phrase/*/'. g:Phrase.filename(&ft)), '\n'),
+  let phrase_list = map(split(globpath(&runtimepath, 'phrase/*/'. g:Phrase.filename(a:context.source__filetype)), '\n'),
         \'[ fnamemodify(v:val, ":h:t"), fnamemodify(v:val, ":p")]')
 
   let phrase_candidate = []
@@ -16,7 +26,6 @@ function! s:unite_source.gather_candidates(args, context)
   endfor
   return phrase_candidate
 endfunction
-
 
 function! s:prepare_candidate(author, phrase_file)
   let candidate = []

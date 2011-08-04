@@ -8,10 +8,9 @@
 
 " GUARD: {{{
 "============================================================
-
-" if exists('g:loaded_phrase')
-  " finish
-" endif
+if exists('g:loaded_phrase') && exists('g:phrase_dev') && !g:phrase_dev
+  finish
+endif
 
 let g:loaded_phrase = 1
 let s:old_cpo = &cpo
@@ -531,6 +530,13 @@ augroup END
 " for [key, val ] in items(s:ft_tbl)
     " echo [key, val]
 " endfor
+
+" KEYMAP: {{{
+"=================================================================
+nnoremap <silent> <Plug>(Phrase.edit) :call g:Phrase.edit('')<CR>
+" xnoremap <silent> <Plug>(Phrase.edit) :call g:Phrase.create('')<CR>
+"}}}
+
 " COMMAND: {{{
 "=================================================================
 command! -nargs=? PhraseList :call g:Phrase.list(<q-args>)

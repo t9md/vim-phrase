@@ -1,10 +1,9 @@
 "=============================================================================
 " File: phrase.vim
 " Author: t9md <taqumd@gmail.com>
-" Version: 0.1.2
 " WebPage: http://github.com/t9md/vim-phrase
 " License: BSD
-" Version: 0.2
+" Version: 0.4
 
 " GUARD: {{{
 "============================================================

@@ -346,7 +346,7 @@ endfunction "}}}
 
 function! s:commentify(ft, str) "{{{
   let cmt = copy(s:get_ft_tbl(a:ft).cmt)
-  return join(insert(cmt, a:str, 1), " ")
+  return join(insert(cmt, a:str, 1), "")
 endfunction "}}}
 
 function! s:strip(str) "{{{

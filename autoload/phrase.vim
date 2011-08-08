@@ -389,7 +389,7 @@ endfunction "}}}
 " }}}
 
 " TEST: {{{
-let s:dev_mode = 1
+let s:dev_mode = 0
 function! s:test(ft, str) "{{{
   echo "ft   : " . a:ft
   echo "ext  : " . s:ft_info.get(a:ft).ext
@@ -508,8 +508,8 @@ function! phrase#start(cmd, opt) "{{{
     if title == -1 | return | endif
 
     let subject   = s:commentify(&ft, " Phrase: " . title, 1)
-    let separator = s:commentify(&ft, s:separator, 0)
-    let phrase = [subject, phrase_separator] + a:opt['body'] + [""]
+    let separator = s:commentify(&ft, s:phrase_separator, 0)
+    let phrase = [subject, separator] + a:opt['body'] + [""]
 
     call s:edit(phrase_path)
     call append(0, phrase)

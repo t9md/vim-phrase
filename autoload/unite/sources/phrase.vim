@@ -16,9 +16,9 @@ let s:unite_source = {
 
 function! s:unite_source.hooks.on_init(args, context) "{{{
   let a:context.source__ext = 
-        \ exists('b:phrase_ext') && !empty('b:phrase_ext')
-        \ ? b:phrase_ext
-        \ : phrase#get_ext_from_filetype(&filetype)
+        \ !empty(a:args) ? a:args[0] :
+        \ exists('b:phrase_ext') && !empty('b:phrase_ext') ? b:phrase_ext  :
+        \ phrase#get_ext_from_filetype(&filetype)
 endfunction"}}}
 
 function! s:unite_source.gather_candidates(args, context)

@@ -226,7 +226,7 @@ let s:ft_data = [
       \ ' scilab            scilab      //                   ',
       \ ' scsh              scsh        ;                    ',
       \ ' scss              scss        /*         */        ',
-      \ ' css               css        /*         */         ',
+      \ ' css               css         /*         */        ',
       \ ' sed               sed         #                    ',
       \ ' sgmldecl          sgmldecl    --         --        ',
       \ ' sgmllnx           sgmllnx     <!--       -->       ',

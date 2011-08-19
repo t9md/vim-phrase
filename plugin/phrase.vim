@@ -7,14 +7,7 @@
 
 " GUARD: {{{1
 "============================================================
-if exists('g:phrase_dev')
-  unlet! g:loaded_phrase
-endif
-
-if !exists('g:phrase_debug')
-  let g:phrase_debug = 0
-endif
-
+if exists('g:phrase_dev') | unlet! g:loaded_phrase | endif
 if exists('g:loaded_phrase')
   finish
 endif
@@ -30,7 +23,7 @@ function! s:set_default(varname, default)
     endif
 endfunction
 
-
+call s:set_default('g:phrase_debug', 0)
 call s:set_default('g:phrase_author', expand("$USER"))
 call s:set_default('g:phrase_basedir', split(&rtp,',')[0] . "/" . "phrase")
 call s:set_default('g:phrase_ft_tbl', {})

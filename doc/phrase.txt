@@ -1,8 +1,9 @@
 *phrase.txt*	gather useful phrase, refer it whenever you want
 
+
 Version: 0.4
 Author : t9md <taqumd@gmail.com>
-
+GitHub: http://github.com/t9md/vim-phrase
 ==============================================================================
 CONTENTS					*phrase-contents*
 
@@ -26,9 +27,6 @@ languages. You can refer it conveniently while you are programming.
 
 Requirement:
 - Vim 7.2 or later
-
-Latest Version:
-http://github.com/t9md/vim-phrase
 
 ==============================================================================
 USAGE								*phrase-usage*

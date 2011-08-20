@@ -27,10 +27,6 @@ function! s:unite_source.gather_candidates(args, context)
   endif
   call unite#print_message("[phrase]: " . a:context.source__ext)
 
-  " [ author , path ]
-  " let phrase_list = map(split(globpath(&runtimepath, 'phrase/*/phrase.'. a:context.source__ext), '\n'),
-        " \'[ fnamemodify(v:val, ":h:t"), fnamemodify(v:val, ":p")]')
-
   let phrase_candidate = []
   for phrase in phrase#get_all(a:context.source__ext)
     let priority = get(g:phrase_author_priority, phrase.author, s:phrase_default_priority)

@@ -500,15 +500,15 @@ function! s:get_ext() "{{{
 endfunction "}}}
 
 function! s:prepare_phrase(prompt) "{{{
-    let title = inputdialog( a:prompt, "", -1 )
-    if title == -1
-      return ""
-    endif
-    return {
-          \ "subject": s:commentify(&ft, " Phrase: " . title, 1),
-          \ "separator": s:commentify(&ft, s:phrase_separator, 0),
-          \ "body": getline(line("'<"), line("'>"))
-          \ }
+  let title = inputdialog( a:prompt, "", -1 )
+  if title == -1
+    return ""
+  endif
+  return {
+        \ "subject": s:commentify(&ft, " Phrase: " . title, 1),
+        \ "separator": s:commentify(&ft, s:phrase_separator, 0),
+        \ "body": getline(line("'<"), line("'>"))
+        \ }
 endfunction "}}}
 
 function! phrase#parse(file) "{{{

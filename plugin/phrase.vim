@@ -47,14 +47,15 @@ augroup END
 
 " KEYMAP: {{{1
 "=================================================================
-nnoremap <silent> <Plug>(phrase-edit)   :<C-u>call phrase#edit()<CR>
-xnoremap <silent> <Plug>(phrase-create) :<C-u>call phrase#create()<CR>
+nnoremap <silent> <Plug>(phrase-edit)   :<C-u>PhraseEdit<CR>
+nnoremap <silent> <Plug>(phrase-list)   :<C-u>PhraseList<CR>
+xnoremap <silent> <Plug>(phrase-create) :<C-u>PhraseCreate<CR>
 
 " COMMAND: {{{1
 "=================================================================
-command! -nargs=? PhraseList          :call phrase#list(<q-args>)
-command! -nargs=? PhraseEdit          :call phrase#edit(<q-args>)
-command! -nargs=0 -range PhraseCreate :call phrase#create(<line1>,<line2>)
+command! -nargs=? PhraseList          :call phrase#list(<f-args>)
+command! -nargs=? PhraseEdit          :call phrase#edit(<f-args>)
+command! -range PhraseCreate :call phrase#create()
 
 " FINISH: {{{1
 let &cpo = s:old_cpo

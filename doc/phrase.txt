@@ -1,5 +1,15 @@
 *phrase.txt*	gather useful phrase, refer it whenever you want
 
+>
+        88888888b.  888                                          
+        888    "88b 888                                          
+        888     888 888                                          
+        888    d88P 888888b.  888d888 8888b.  .d8888b   .d888b.  
+        88888888P"  888  "88b 888P"      "88b 88K      d8P   Y8b 
+        888         888   888 888    .d888888 "Y8888b. 888888888 
+        888         888   888 888    888  888      X88 Y8b.      
+        888         888   888 888    "Y888888  88888P'  "Y88888 
+<
 
 Version: 0.4
 Author : t9md <taqumd@gmail.com>

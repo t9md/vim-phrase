@@ -23,7 +23,7 @@ Copy phrase example file to that directory.
 
 Show phrase then enter to jump to that title
 
-      :PhraseEdit
+      :PhraseEdit pl
 
 Visually select text in buffer then create phrase from that text.
 

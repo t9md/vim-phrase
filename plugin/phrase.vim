@@ -3,7 +3,7 @@
 " Author: t9md <taqumd@gmail.com>
 " WebPage: http://github.com/t9md/vim-phrase
 " License: BSD
-" Version: 0.4
+" Version: 0.5
 
 " GUARD: {{{1
 "============================================================
@@ -27,7 +27,6 @@ call s:set_default('g:phrase_debug', 0)
 call s:set_default('g:phrase_author', expand("$USER"))
 call s:set_default('g:phrase_basedir', split(&rtp,',')[0] . "/" . "phrase")
 call s:set_default('g:phrase_ft_tbl', {})
-call s:set_default('g:phrase_dir', expand(g:phrase_basedir . '/'. g:phrase_author))
 
 function! s:set_phrase_ext() "{{{
   " set phrase_ext by checking last 2 line in buffer.
@@ -53,8 +52,8 @@ xnoremap <silent> <Plug>(phrase-create) :<C-u>PhraseCreate<CR>
 
 " COMMAND: {{{1
 "=================================================================
-command! -nargs=? PhraseList          :call phrase#list(<f-args>)
-command! -nargs=? PhraseEdit          :call phrase#edit(<f-args>)
+command! PhraseList          :call phrase#list()
+command! -nargs=? PhraseEdit :call phrase#edit(<f-args>)
 command! -range PhraseCreate :call phrase#create()
 
 " FINISH: {{{1

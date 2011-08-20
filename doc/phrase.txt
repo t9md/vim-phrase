@@ -11,216 +11,213 @@
         888         888   888 888    "Y888888  88888P'  "Y88888 
 <
 
-Version: 0.4
+Version: 0.5
 Author : t9md <taqumd@gmail.com>
 GitHub: http://github.com/t9md/vim-phrase
 ==============================================================================
 CONTENTS					*phrase-contents*
 
-Introduction				    |phrase-introduction|
-Usage					    |phrase-usage|
-Interface				    |phrase-interface|
-  Commmands					|phrase-commands|
-  Keymap					|phrase-keymap|
-  Unite plugin					|phrase-unite|
-Variables					|phrase-variables|
-Configuration Examples			    |phrase-examples|
-ToDo					    |phrase-todo|
-Bugs					    |phrase-bugs|
-Changelog				    |phrase-changelog|
+Introduction				|phrase-introduction|
+Variables				|phrase-variables|
+Commmands				|phrase-commands|
+Keymap					|phrase-keymap|
+Unite plugin				|phrase-unite|
+Configuration Examples			|phrase-configuration|
+Collaborate				|phrase-collaborate|
+  Dropbox				|phrase-collaborate-dropbox|
+  Github				|phrase-collaborate-github|
+ToDo					|phrase-todo|
+Bugs					|phrase-bugs|
+Changelog				|phrase-changelog|
 
 ==============================================================================
 Introduction						*phrase-introduction*
 
 *phrase* is Vim plugin to help gathering useful phrase of several programming
-languages. You can refer it conveniently while you are programming.
+languages.
+You can refer it conveniently while you are programming.
 
 Requirement:
-- Vim 7.2 or later
+- Vim 7.0 or later
 
 ==============================================================================
-USAGE								*phrase-usage*
+VARIABLES						 *phrase-variables*
+
+g:phrase_author						*g:phrase_author*
+	Your identifier of phrase. this variable is used to identify
+	your phrase from several subdirectory under |g:phrase_basedir|.
+
+	Default~
+	  $USER
+
+g:phrase_basedir					*g:phrase_basedir*
+	Each phrase is created under `g:phrase_basedir/g:phrase_auther/`
+	Default~
+	  $HOME/.vim/phrase
+
+g:phrase_ft_tbl						*g:phrase_ft_tbl*
+
+	Dictionary used to customize or add new filetype
+
+	Default~
+	{}
+
+	Each entry has following fields
+
+	{ filetype: { "ext": FILE_EXTENSION, "cmt": [CMT_L, CMT_R] }
+
+	* FILE_EXTENSION(required)
+	* CMT_L(required)
+	* CMT_R(optional)
+
+EXAMPLE~
 >
-	" show Ruby's phrase list
-	:PhaseList ruby
+	let g:phrase_ft_tbl = {}
+	let g:phrase_ft_tbl.lua = {
+	      \ "ext": "lua",
+	      \ "cmt": ["--"],
+	      \ }
+	let g:phrase_ft_tbl.c = {
+	      \ "ext": "c",
+	      \ "cmt": ["/*", "*/"],
+	      \ }
+<
+b:phrase_ext						*g:phrase_ext*
+	buffer local variable to indicate phrase's extension.
+	this value is used if set.
 
-	" show Ruby's phrase list(by specifying extension)
-	:PhaseList rb
 
-	" show phrase list of current &filetype
-	:PhaseList
+Example~
+>
+	" Opscode's Chef is based on Ruby, but I want chef's phrase keep 
+	" separated from Ruby's one.
+	au BufNewFile,BufRead */*cookbooks/*  let b:phrase_ext = 'chef'
+<
 
-	" Edit Ruby's phrase
-	:PhaseEdit ruby
+modeline~
+phrase.vim support original modeline.
+In example above. phrase.chef is the phrase's filename.
+If you execute |:PhraseList| from buffer `phrase.chef`
+phrase.vim try to find phrases from &filetype means, from file `phrase.rb`.
+If you want continue to search phrase from `phrase.chef`.
+You can set mode line begin with format `phrase: {ext}`.
 
-	" Edit Perl's phrase(by specifying extension)
-	:PhaseEdit pl
+Example modeline~
+in phrase.chef
+>
+	# phrase: chef
+	# vim: set ft=ruby:
+<
 
-	" Edit phrase of current &filetype
-	:PhaseEdit
-
-	" Create phrase from selected text(=range)
-	:'<,'>PhraseCreate<CR>
-
+Example for Rakefile~
+.vimrc
+>
+	au BufNewFile,BufRead Rakefile let b:phrase_ext = 'rake'
+<
+in phrase.rake
+>
+	# phrase: rake
+<
 ==============================================================================
-INTERFACE						*phrase-interface*
-
-------------------------------------------------------------------------------
 COMMANDS						*phrase-commands*
 
-:PhraseList [lang]					 *:PhraseList*
-	Show phrase-list of specified launguage.
-	If lang is ommited. current |&filetype|is used.
+:PhraseList						*:PhraseList*
+	Show phrase-list
+	<CR> to jump to actual phrase.
 
-:PhraseEdit [lang]					 *:PhraseEdit*
-	Edit phrase of specified launguage.
-	If lang is ommited. current |&filetype|is used.
+:PhraseEdit {ext}					 *:PhraseEdit*
+	Edit phrase of specified extension.
+	If {ext} is ommited. current |&filetype| 's default extension is used.
 
-:[range]PhraseCreate [lang]				 *:PhraseCreate*
+:[range]PhraseCreate					 *:PhraseCreate*
 	Create new phrase from current |:range|.
 
-------------------------------------------------------------------------------
-KEYMAP EXAMPLE						*phrase-keymap*
->
-	" mapleader default is '\', I use ',' instead.
-	let mapleader = ","
-	nnoremap <silent> <Leader>pl  :PhraseList<CR>
-	nnoremap <silent> <Leader>pe  :PhraseEdit<CR>
-	vnoremap <silent> <Leader>pe  :PhraseEdit<CR>
-	vnoremap <silent> <Leader>pc  :PhraseCreate<CR>
-	vnoremap <silent> <Leader>pl  :<C-u>PhraseList<CR>
+==============================================================================
+KEYMAP							*phrase-keymap*
 
-	" If you use Unite plugin
-	nnoremap <silent> <Space>p  :<C-u>Unite phrase -start-insert<CR>
+n <Plug>(phrase-edit)
+	Edit phrase.
+n <Plug>(phrase-list)
+	Show phrase-list.
+v <Plug>(phrase-create)
+	Create phrase from visually selected text.
 
-------------------------------------------------------------------------------
+==============================================================================
 UNITE PLUGIN						 *phrase-unite*
 
-Phrase provide |unite.vim| plugin to quickly access each phrase by search
-phrase title incrementally.
+|phrase.vim| provide |unite.vim| plugin.
+I highly recommend you to install |unite.vim| to get full power of |phrase.vim|.
 
 Try
 >
 	:Unite phrase
 <
-or Set key map like bellow
+==============================================================================
+CONFIGURATION EXAMPLE                               *phrase-configuration*
 >
+	let g:phrase_auther  = "t9md"
+
+	nmap gl  <Plug>(phrase-list)
+	nmap gp  <Plug>(phrase-edit)
+	xmap gp  <Plug>(phrase-create)
+
+	" If you use Unite plugin
 	nnoremap <silent> <Space>p  :<C-u>Unite phrase -start-insert<CR>
+<
 ==============================================================================
 COLLABORATE						  *phrase-collaborate*
 ------------------------------------------------------------------------------
-EXAMPLE						  *phrase-collaborate-example*
-------------------------------------------------------------------------------
-Assume TARO and HANAKO share their phrase each other.
->
-	# TARO's setting
-	let g:phrase_author = "taro"
-
-	# HANAKO's setting
-	let g:phrase_author = "hanako"
-<
-* Taro pushes his phrase directory into git.
-* Hanako pushes his phrase directory into git.
-* Taro love Ruby and want to learn Python.
-* Hanako love Python and want to learn Ruby.
-* Taro pull Hanako's Python phrase from git, Hanako pull Taro's Ruby phrase from git,
-  helps learning new language more easily.
-
 DROPBOX						  *phrase-collaborate-dropbox*
-------------------------------------------------------------------------------
+
 Shareing phrase folder with Dropbox is another practical use case.
 
 If you dont't want to .swp files be synced every time your collaborator
 view your phrase, disable making swap file in among all collaborators.
 >
     au BufNewFile,BufRead */phrase/*/phrase.* setlocal noswapfile
-
-GITHUB						  *phrase-collaborate-github*
+<
 ------------------------------------------------------------------------------
-Publish your phrase to github helps other.
-My proposal about this type of repository name is ..
+GITHUB						  *phrase-collaborate-github*
 
-Repository Name:
-  phrase-{your id}
+Publish your phrases to github.
+My proposal about this type of repository name is `phrase-{yourname}`.
 
-Layout:
-  put your phrases under 'phrase/{your id}/' sub directory.
+Repository structure:~
 
->
+	phrase-{yourname}/phrase/{yourname}/
+	phrase-{yourname}/phrase/{yourname}/phrase.vim
+	phrase-{yourname}/phrase/{yourname}/phrase.rb
+
+Example repository:~
+  https://github.com/t9md/phrase-t9md
+
 	phrase-t9md/phrase/t9md
 	phrase-t9md/phrase/t9md/phrase.vim
 	phrase-t9md/phrase/t9md/phrase.rb
-<
 
-Example repository:
-  https://github.com/t9md/phrase-t9md
-
-==============================================================================
-VARIABLES						 *phrase-variables*
-
-g:phrase_author						*g:phrase_author*
-		Your identifier of phrase. this variable is used to identify
-		your phrase from several subdirectory under |g:phrase_basedir|.
-
-		Default value $USER
-
-g:phrase_basedir					*g:phrase_basedir*
-		Base directory where phrases reside in
-
-		Default value $HOME/.vim/phrase
-
-g:phrase_ft_tbl						*g:phrase_ft_tbl*
-
-		Dictionary used to customize or add new filetype
-
-		Default value not exist
-
-		Each entry has following fields
-
-		  { filetype: { "ext": FILE_EXTENSION, "cmt": [CMT_L, CMT_R] }
-
-		    * FILE_EXTENSION(required)
-		    * CMT_L(required)
-		    * CMT_R(optional)
-
-		Example >
+Unite phrase plugin gather phrases from directory named `phrase` in &rtp.
+So if you manage you plugin with `pathogen` or Vundle, you can also manage
+phrases as easily as other plugin.
+For Vundle you can import t9md's phrase by setting following line in .vimrc
 >
-		let g:phrase_ft_tbl = {}
-		let g:phrase_ft_tbl.lua = {}
-
-		let g:phrase_ft_tbl.lua.cmt = ['--']
-		" ext is file's extension
-		let g:phrase_ft_tbl.lua.ext = 'lua'
-		let g:phrase_ft_tbl = {
-			   \"c": { "ext": "c", "cmt": ["/*", "*/"] }
-			   \ }
+	Bundle: t9md/phrase-t9md
 <
-EXAMPLE
->
-	let g:phrase_auther  = "t9md"
-	let g:phrase_basedir = "$HOME/.vim/phrase"
-<
-
-==============================================================================
-TODO							*phrase-todo*
-
-* add major programming language's ft2ext mapping
-* add major programming language's one-line comment string.
-* Support languages which don't have one line based comment.
-
 ==============================================================================
 BUGS							*phrase-bugs*
-
-* File type and extension matching not precise.
 
 ==============================================================================
 CHANGELOG						*phrase-changelog*
 
-0.4     2011-08-04
+2011-08-21: v0.5
+	- update help
+	- :PhraseList no longer accept argument(for simplicity).
+	- :PhraseCreate no longer accept argument(for simplicity).
+	- b:phrase_filetype is renamed as b:phrase_ext.
+2011-08-04: v0.4
 	- add sorter_phrase for unite.
-0.3	2011-07-31
+2011-07-31: v0.3
 	- introduce 'b:phrase_filetype' var.
-0.2	2011-03-10
+2011-03-10: v0.2
 	- Support multiple languages
 	- Change configuration variables.
           g:phrase_dir is no longer used.
@@ -228,7 +225,7 @@ CHANGELOG						*phrase-changelog*
           Use g:phrase_ft_tbl to customise filetype extension map and comment
           string.
 	- Eliminate comment string when creating PhraseList.
-0.1	2011-03-06
+2011-03-06: v0.1
 	- First release
 ==============================================================================
 vim:tw=78:ts=8:ft=help:norl:

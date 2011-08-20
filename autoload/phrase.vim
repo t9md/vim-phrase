@@ -3,6 +3,7 @@ let s:phrase_header_width = 70
 let s:phrase_separator = repeat('=', s:phrase_header_width)
 let s:phrase_list_buffer = '[ phrase list ]'
 let s:phrase_list_buffer_nr = -1
+let s:phrase_dir = expand(g:phrase_basedir . '/'. g:phrase_author)
 
 " FT_DATA: {{{
 " FORMAT:
@@ -352,13 +353,13 @@ function! s:strip(str) "{{{
 endfunction "}}}
 
 function! s:ensure_phrase_dir() "{{{
-  if isdirectory(g:phrase_dir)
+  if isdirectory(s:phrase_dir)
     return
   endif
 
-  let answer = input("create " . g:phrase_dir . "?[y/n] ")
+  let answer = input("create " . s:phrase_dir . "?[y/n] ")
   if answer == 'y'
-    call mkdir(g:phrase_dir, 'p')
+    call mkdir(s:phrase_dir, 'p')
   endif
 endfunction "}}}
 
@@ -433,6 +434,7 @@ function! phrase#create(...) "{{{
     return
   endif
   let  phrase = s:prepare_phrase("Phrase[ " . ext . " ]")
+  if empty(phrase) | return | endif
   call s:edit(s:phrase_path(ext))
   call append(0, [phrase.subject, phrase.separator] + phrase.body + [""])
   execute "normal! 3ggV".(len(phrase.body)-1)."jo"
@@ -444,31 +446,23 @@ function! phrase#edit(...) "{{{
 endfunction "}}}
 
 function! s:phrase_path(ext) "{{{
-  return simplify(g:phrase_dir ."/phrase.". a:ext)
+  return simplify(s:phrase_dir ."/phrase.". a:ext)
 endfunction "}}}
 
 function! phrase#list(...) "{{{
-  call s:ensure_phrase_dir()
-  let author = g:phrase_author
-
-  let ext = a:0 > 0 ? a:1 : ""
-  let ext =
-        \ !empty(ext) ? ext :
-        \ exists('b:phrase_ext') && !empty('b:phrase_ext') ? b:phrase_ext :
-        \ s:ft_info.get(&filetype).ext
-  let fname = "phrase." . ext
-
-  let phrase_path = simplify(expand(g:phrase_dir ."/".fname))
-
-  let phrase_list = phrase#parse(phrase_path)
+  let ext = a:0 > 0 ? a:1 : s:get_ext()
+  let path = s:phrase_path(ext)
+  let phrase_list = phrase#parse(path)
   let phrase_titles = map(deepcopy(phrase_list), 'v:val.title')
 
   call s:open_listwin()
+  set modifiable
   silent normal! gg"_dG
   call append(0, phrase_titles)
+  set nomodifiable
   silent normal! gg
   let b:phrase_list = phrase_list
-  let b:phrase_path = phrase_path
+  let b:phrase_path = path
   nnoremap <buffer> <CR> :<C-u>call <SID>jump_to_title(b:phrase_path, b:phrase_list, getline('.'))<CR>
 endfunction "}}}
 
@@ -482,7 +476,7 @@ function! s:jump_to_title(phrase_path, phrase_list, title) "{{{
   endfor
   if line != -1
     call s:edit(a:phrase_path)
-    execute "normal! ".  line . "gg"
+    execute "normal! ".  line . "ggzt"
   endif
 endfunction "}}}
 

@@ -306,6 +306,7 @@ let s:ft_data = [
 " FT_INFO: {{{
 "==================================================================
 let s:ft_info = {}
+
 function! s:ft_info.init() "{{{
   let tbl = {}
   for ent in s:ft_data
@@ -316,6 +317,9 @@ function! s:ft_info.init() "{{{
 endfunction "}}}
 
 function! s:ft_info.get(ft)
+  if !has_key(self, "_table")
+    call self.init()
+  endif
   let val = get(self._table, a:ft, {"ext": a:ft , "cmt": ["#"] })
   return val
 endfunction
@@ -386,10 +390,46 @@ function! s:open_listwin() "{{{
     let s:phrase_list_buffer_nr = bufnr('%')
   endif
 endfunction "}}}
+
+function! s:phrase_path(ext) "{{{
+  return simplify(s:phrase_dir ."/phrase.". a:ext)
+endfunction "}}}
+
+function! s:jump_to_title(phrase_path, phrase_list, title) "{{{
+  let line = -1
+  for phrase in a:phrase_list
+    if phrase.title == a:title
+      let line = phrase.line
+      break 
+    endif
+  endfor
+  if line != -1
+    call s:edit(a:phrase_path)
+    execute "normal! ".  line . "ggzt"
+  endif
+endfunction "}}}
+
+function! s:get_ext() "{{{
+  let ext = 
+        \ exists('b:phrase_ext') ? b:phrase_ext :
+        \ s:ft_info.get(&ft).ext
+  return ext
+endfunction "}}}
+
+function! s:prepare_phrase(prompt) "{{{
+  let title = inputdialog( a:prompt, "", -1 )
+  if title == -1
+    return ""
+  endif
+  return {
+        \ "subject": s:commentify(&ft, " Phrase: " . title, 1),
+        \ "separator": s:commentify(&ft, s:phrase_separator, 0),
+        \ "body": getline(line("'<"), line("'>"))
+        \ }
+endfunction "}}}
 " }}}
 
 " INIT: {{{
-call s:ft_info.init()
 call s:ensure_phrase_dir()
 " }}}
 
@@ -428,8 +468,8 @@ function! phrase#get_ext_from_filetype(filetype) "{{{
   return s:ft_info.get(a:filetype).ext
 endfunction "}}}
 
-function! phrase#create(...) "{{{
-  let ext = a:0 > 0 ? a:1 : s:get_ext()
+function! phrase#create() "{{{
+  let ext = s:get_ext()
   if empty(ext)
     return
   endif
@@ -445,12 +485,8 @@ function! phrase#edit(...) "{{{
   call s:edit(s:phrase_path(ext))
 endfunction "}}}
 
-function! s:phrase_path(ext) "{{{
-  return simplify(s:phrase_dir ."/phrase.". a:ext)
-endfunction "}}}
-
-function! phrase#list(...) "{{{
-  let ext = a:0 > 0 ? a:1 : s:get_ext()
+function! phrase#list() "{{{
+  let ext = s:get_ext()
   let path = s:phrase_path(ext)
   let phrase_list = phrase#parse(path)
   let phrase_titles = map(deepcopy(phrase_list), 'v:val.title')
@@ -466,20 +502,6 @@ function! phrase#list(...) "{{{
   nnoremap <buffer> <CR> :<C-u>call <SID>jump_to_title(b:phrase_path, b:phrase_list, getline('.'))<CR>
 endfunction "}}}
 
-function! s:jump_to_title(phrase_path, phrase_list, title) "{{{
-  let line = -1
-  for phrase in a:phrase_list
-    if phrase.title == a:title
-      let line = phrase.line
-      break 
-    endif
-  endfor
-  if line != -1
-    call s:edit(a:phrase_path)
-    execute "normal! ".  line . "ggzt"
-  endif
-endfunction "}}}
-
 function! phrase#files(ext) "{{{
   return split(globpath(&runtimepath, 'phrase/*/'. 'phrase.'.a:ext),'\n')
 endfunction "}}}
@@ -491,25 +513,6 @@ function! phrase#get_all(ext)"{{{
   endfor
   return result
 endfunction"}}}
-
-function! s:get_ext() "{{{
-  let ext = 
-        \ exists('b:phrase_ext') ? b:phrase_ext :
-        \ s:ft_info.get(&ft).ext
-  return ext
-endfunction "}}}
-
-function! s:prepare_phrase(prompt) "{{{
-  let title = inputdialog( a:prompt, "", -1 )
-  if title == -1
-    return ""
-  endif
-  return {
-        \ "subject": s:commentify(&ft, " Phrase: " . title, 1),
-        \ "separator": s:commentify(&ft, s:phrase_separator, 0),
-        \ "body": getline(line("'<"), line("'>"))
-        \ }
-endfunction "}}}
 
 function! phrase#parse(file) "{{{
   let phrase_list = []

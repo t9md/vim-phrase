@@ -51,7 +51,7 @@ g:phrase_author						*g:phrase_author*
 	  $USER
 
 g:phrase_basedir					*g:phrase_basedir*
-	Each phrase is created under `g:phrase_basedir/g:phrase_auther/`
+	Each phrase is created under `g:phrase_basedir/g:phrase_author/`
 	Default~
 	  $HOME/.vim/phrase
 
@@ -155,7 +155,7 @@ Try
 ==============================================================================
 CONFIGURATION EXAMPLE                               *phrase-configuration*
 >
-	let g:phrase_auther  = "t9md"
+	let g:phrase_author  = "t9md"
 
 	nmap gl  <Plug>(phrase-list)
 	nmap gp  <Plug>(phrase-edit)
@@ -221,7 +221,7 @@ CHANGELOG						*phrase-changelog*
 	- Support multiple languages
 	- Change configuration variables.
           g:phrase_dir is no longer used.
-          Use g:phrase_auther and g:phrase_basedir
+          Use g:phrase_author and g:phrase_basedir
           Use g:phrase_ft_tbl to customise filetype extension map and comment
           string.
 	- Eliminate comment string when creating PhraseList.

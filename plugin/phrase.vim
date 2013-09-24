@@ -25,7 +25,7 @@ endfunction
 
 call s:set_default('g:phrase_debug', 0)
 call s:set_default('g:phrase_author', expand("$USER"))
-call s:set_default('g:phrase_basedir', split(&rtp,',')[0] . "/" . "phrase")
+call s:set_default('g:phrase_basedir', "~/.vim/phrase")
 call s:set_default('g:phrase_ft_tbl', {})
 
 function! s:set_phrase_ext() "{{{

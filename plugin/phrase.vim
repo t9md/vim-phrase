@@ -49,8 +49,8 @@ nnoremap <silent> <Plug>(phrase-edit)   :<C-u>call phrase#start('edit')<CR>
 xnoremap <silent> <Plug>(phrase-create) :<C-u>call phrase#start('create')<CR>
 
 " Command:
-command! -nargs=?        PhraseEdit   :call phrase#start('edit',<f-args>)
-command! -nargs=? -range PhraseCreate :call phrase#start('create')
+command! -nargs=?        PhraseEdit   :call phrase#start('edit'  , <f-args>)
+command! -nargs=? -range PhraseCreate :call phrase#start('create', <f-args>)
 
 " Finish:
 let &cpo = s:old_cpo

@@ -22,6 +22,7 @@ let s:options = {
       \ 'g:phrase_author': expand("$USER"),
       \ 'g:phrase_basedir': "~/.vim/phrase",
       \ 'g:phrase_ft_tbl': {},
+      \ 'g:phrase_author_priority': {},
       \ }
 
 call s:set_options(s:options)
@@ -44,14 +45,12 @@ augroup plugin-phrase
 augroup END
 
 " KeyMap:
-nnoremap <silent> <Plug>(phrase-edit)   :<C-u>call phrase#edit()<CR>
-nnoremap <silent> <Plug>(phrase-list)   :<C-u>call phrase#list()<CR>
-xnoremap <silent> <Plug>(phrase-create) :<C-u>call phrase#create()<CR>
+nnoremap <silent> <Plug>(phrase-edit)   :<C-u>call phrase#start('edit')<CR>
+xnoremap <silent> <Plug>(phrase-create) :<C-u>call phrase#start('create')<CR>
 
 " Command:
-command!          PhraseList   :call phrase#list()
-command! -nargs=? PhraseEdit   :call phrase#edit(<f-args>)
-command! -range   PhraseCreate :call phrase#create()
+command! -nargs=?        PhraseEdit   :call phrase#start('edit',<f-args>)
+command! -nargs=? -range PhraseCreate :call phrase#start('create')
 
 " Finish:
 let &cpo = s:old_cpo

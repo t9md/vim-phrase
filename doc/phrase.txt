@@ -137,8 +137,6 @@ KEYMAP							*phrase-keymap*
 
 n <Plug>(phrase-edit)
 	Edit phrase.
-n <Plug>(phrase-list)
-	Show phrase-list.
 v <Plug>(phrase-create)
 	Create phrase from visually selected text.
 
@@ -208,6 +206,9 @@ BUGS							*phrase-bugs*
 ==============================================================================
 CHANGELOG						*phrase-changelog*
 
+2013-12-08: v0.6
+	- code rewritten
+	- eliminate phrase#list() for simplicity
 2011-08-21: v0.5
 	- update help
 	- :PhraseList no longer accept argument(for simplicity).

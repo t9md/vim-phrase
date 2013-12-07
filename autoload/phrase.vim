@@ -5,8 +5,8 @@ let s:phrase_list_buffer = '[ phrase list ]'
 let s:phrase_list_buffer_nr = -1
 let s:phrase_dir = expand(g:phrase_basedir . '/'. g:phrase_author)
 
-" FT_DATA: {{{
-" FORMAT:
+" FT_DATA:
+"{{{1
 " filetype | extension  | comment_left | comment_right
 let s:ft_data = [
       \ 'aap               aap            #                    ',
@@ -303,20 +303,18 @@ let s:ft_data = [
       \ ]
 "}}}
 
-" FT_INFO: {{{
-"==================================================================
+" FT_INFO:
 let s:ft_info = {}
-
-function! s:ft_info.init() "{{{
+function! s:ft_info.init() "{{{1
   let tbl = {}
   for ent in s:ft_data
     let [ft, ext; cmt] =  split(ent,'  \+') " separate with *two* or more space
     let tbl[ft] = { 'ext': ext, 'cmt': cmt }
   endfor
   let self._table = extend(tbl, g:phrase_ft_tbl, "force")
-endfunction "}}}
+endfunction
 
-function! s:ft_info.get(ft)
+function! s:ft_info.get(ft) "{{{1
   if !has_key(self, "_table")
     call self.init()
   endif
@@ -325,38 +323,38 @@ function! s:ft_info.get(ft)
 endfunction
 " }}}
 
-" Utility: {{{
-"==================================================================
-function! s:commentify(ft, string, is_subject) "{{{
+" Utility:
+function! s:commentify(ft, string, is_subject) "{{{1
   let cmt = copy(s:ft_info.get(a:ft).cmt)
   if a:is_subject
-    let string = len(cmt) == 1 ? a:string : a:string . " "
-    let string = string . repeat(" ", s:phrase_header_width - len(string))
+    let string = len(cmt) == 1
+          \ ? a:string
+          \ : a:string . repeat(" ", s:phrase_header_width - len(a:string))
   else
     let string = a:string
   endif
   return join(insert(cmt, string, 1), "")
-endfunction "}}}
+endfunction
 
 let s:metachar = '.*\()[]{}%@$<>'
-function! s:extract_title(string, ft) "{{{
+function! s:extract_title(string, ft) "{{{1
   let cmt = s:ft_info.get(a:ft).cmt
   let cmt_l = escape(get(cmt, 0), s:metachar)
   let cmt_r = escape(get(cmt, 1, ""), s:metachar)
   let pattern = '\v^'. cmt_l .'\s+Phrase:\s+\zs.*\ze\s*'. cmt_r . '$'
   " let pattern = '.*'
   return s:strip(matchstr(a:string, pattern))
-endfunction "}}}
+endfunction
 
-function! s:list_with_index(list) "{{{
+function! s:list_with_index(list) "{{{1
   return map(a:list,'[v:key, v:val]')
-endfunction "}}}
+endfunction
 
-function! s:strip(str) "{{{
+function! s:strip(str) "{{{1
   return matchstr(a:str, '^\s*\zs.\{-}\ze\s*$')
-endfunction "}}}
+endfunction
 
-function! s:ensure_phrase_dir() "{{{
+function! s:ensure_phrase_dir() "{{{1
   if isdirectory(s:phrase_dir)
     return
   endif
@@ -365,9 +363,9 @@ function! s:ensure_phrase_dir() "{{{
   if answer == 'y'
     call mkdir(s:phrase_dir, 'p')
   endif
-endfunction "}}}
+endfunction
 
-function! s:edit(path) "{{{
+function! s:edit(path) "{{{1
   let winno = bufwinnr(a:path)
   if winno != -1
     execute winno . ':wincmd w'
@@ -375,9 +373,9 @@ function! s:edit(path) "{{{
     let opt = winwidth(0) * 2 < winheight(0) * 5 ? "" : "vertical"
     exe "belowright " . opt . " split " . a:path
   endif
-endfunction "}}}
+endfunction
 
-function! s:open_listwin() "{{{
+function! s:open_listwin() "{{{1
   let winno = bufwinnr(s:phrase_list_buffer_nr)
   if winno != -1 " found!
     execute winno."wincmd w"
@@ -389,13 +387,13 @@ function! s:open_listwin() "{{{
     setlocal bufhidden=hide buftype=nofile noswapfile nobuflisted
     let s:phrase_list_buffer_nr = bufnr('%')
   endif
-endfunction "}}}
+endfunction
 
-function! s:phrase_path(ext) "{{{
+function! s:phrase_path(ext) "{{{1
   return simplify(s:phrase_dir ."/phrase.". a:ext)
-endfunction "}}}
+endfunction
 
-function! s:jump_to_title(phrase_path, phrase_list, title) "{{{
+function! s:jump_to_title(phrase_path, phrase_list, title) "{{{1
   let line = -1
   for phrase in a:phrase_list
     if phrase.title == a:title
@@ -407,16 +405,16 @@ function! s:jump_to_title(phrase_path, phrase_list, title) "{{{
     call s:edit(a:phrase_path)
     execute "normal! ".  line . "ggzt"
   endif
-endfunction "}}}
+endfunction
 
-function! s:get_ext() "{{{
+function! s:get_ext() "{{{1
   let ext = 
         \ exists('b:phrase_ext') ? b:phrase_ext :
         \ s:ft_info.get(&ft).ext
   return ext
-endfunction "}}}
+endfunction
 
-function! s:prepare_phrase(prompt) "{{{
+function! s:prepare_phrase(prompt) "{{{1
   let title = inputdialog( a:prompt, "", -1 )
   if title == -1
     return ""
@@ -426,49 +424,18 @@ function! s:prepare_phrase(prompt) "{{{
         \ "separator": s:commentify(&ft, s:phrase_separator, 0),
         \ "body": getline(line("'<"), line("'>"))
         \ }
-endfunction "}}}
+endfunction
 " }}}
 
-" INIT: {{{
+" Init:
 call s:ensure_phrase_dir()
-" }}}
 
-" TEST: {{{
-let s:dev_mode = 0
-function! s:test(ft, str) "{{{
-  echo "ft   : " . a:ft
-  echo "ext  : " . s:ft_info.get(a:ft).ext
-  let cmted = s:commentify(a:ft, " Phrase: " .a:str, 1)
-  echo "cmted: " . cmted
-  let title = s:extract_title(cmted, a:ft)
-  echo "title: " . title
-  echo "origi: " . a:str
-  let result = a:str == title
-  echo "result: " . result
-  echo ""
-endfunction "}}}
-function! s:run_test() "{{{
-  let str = "ABCDEFG"
-  let ft = ''
-  call s:test(ft, str)
-  for ft in keys(s:ft_info._table)
-    call s:test(ft, str)
-  endfor
-endfunction "}}}
-" let s:dev_mode = 1
-if s:dev_mode == 1
-  call s:run_test()
-  finish
-endif
-"}}}
-
-" Public API: {{{
-"==================================================================
-function! phrase#get_ext_from_filetype(filetype) "{{{
+" Public:
+function! phrase#get_ext_from_filetype(filetype) "{{{1
   return s:ft_info.get(a:filetype).ext
-endfunction "}}}
+endfunction
 
-function! phrase#create() "{{{
+function! phrase#create() "{{{1
   let ext = s:get_ext()
   if empty(ext)
     return
@@ -478,14 +445,14 @@ function! phrase#create() "{{{
   call s:edit(s:phrase_path(ext))
   call append(0, [phrase.subject, phrase.separator] + phrase.body + [""])
   execute "normal! 3ggV".(len(phrase.body)-1)."jo"
-endfunction "}}}
+endfunction
 
-function! phrase#edit(...) "{{{
+function! phrase#edit(...) "{{{1
   let ext = a:0 > 0 ? a:1 : s:get_ext()
   call s:edit(s:phrase_path(ext))
-endfunction "}}}
+endfunction
 
-function! phrase#list() "{{{
+function! phrase#list() "{{{1
   let ext = s:get_ext()
   let path = s:phrase_path(ext)
   let phrase_list = phrase#parse(path)
@@ -500,21 +467,21 @@ function! phrase#list() "{{{
   let b:phrase_list = phrase_list
   let b:phrase_path = path
   nnoremap <buffer> <CR> :<C-u>call <SID>jump_to_title(b:phrase_path, b:phrase_list, getline('.'))<CR>
-endfunction "}}}
+endfunction
 
-function! phrase#files(ext) "{{{
+function! phrase#files(ext) "{{{1
   return split(globpath(&runtimepath, 'phrase/*/'. 'phrase.'.a:ext),'\n')
-endfunction "}}}
+endfunction
 
-function! phrase#get_all(ext)"{{{
+function! phrase#get_all(ext) "{{{1
   let result = []
   for phrase_file in phrase#files(a:ext)
     call extend(result, phrase#parse(phrase_file))
   endfor
   return result
-endfunction"}}}
+endfunction
 
-function! phrase#parse(file) "{{{
+function! phrase#parse(file) "{{{1
   let phrase_list = []
   let author = fnamemodify(a:file, ":h:t")
 
@@ -531,7 +498,44 @@ function! phrase#parse(file) "{{{
     endif
   endfor
   return phrase_list
-endfunction "}}}
+endfunction
 " }}}
+
+" Test: {{{1
+if expand("%:p") !=# expand("<sfile>:p")
+  finish
+endif
+
+function! s:test(ft, str) "{{{1
+  echo "ft   : " . a:ft
+  echo "ext  : " . s:ft_info.get(a:ft).ext
+  let cmted = s:commentify(a:ft, " Phrase: " .a:str, 1)
+  echo "cmted: " . cmted
+  let title = s:extract_title(cmted, a:ft)
+  echo "title: " . title
+  echo "origi: " . a:str
+  let result = a:str == title
+  echo "result: " . result
+  echo ""
+endfunction
+
+function! s:run_test() "{{{1
+  let str = "ABCDEFG"
+  let ft = ''
+  " call s:test(ft, str)
+  call s:test('haskell', str)
+  call s:test('vim', str)
+  " echo PP(s:ft_info)
+  " for ft in keys(s:ft_info._table)
+    " echo ft
+    " call s:test(ft, str)
+  " endfor
+endfunction
+
+" PP ft_info._table
+
+call s:run_test()
+"}}}
+
 
 " vim: foldmethod=marker

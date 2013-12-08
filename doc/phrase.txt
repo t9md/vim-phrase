@@ -55,55 +55,24 @@ g:phrase_basedir					*g:phrase_basedir*
 	Default~
 	  $HOME/.vim/phrase
 
-g:phrase_ft_tbl						*g:phrase_ft_tbl*
-
-	Dictionary used to customize or add new filetype
-
-	Default~
-	{}
-
-	Each entry has following fields
-
-	{ filetype: { "ext": FILE_EXTENSION, "cmt": [CMT_L, CMT_R] }
-
-	* FILE_EXTENSION(required)
-	* CMT_L(required)
-	* CMT_R(optional)
-
-EXAMPLE~
->
-	let g:phrase_ft_tbl = {}
-	let g:phrase_ft_tbl.lua = {
-	      \ "ext": "lua",
-	      \ "cmt": ["--"],
-	      \ }
-	let g:phrase_ft_tbl.c = {
-	      \ "ext": "c",
-	      \ "cmt": ["/*", "*/"],
-	      \ }
-<
-b:phrase_ext						*g:phrase_ext*
-	buffer local variable to indicate phrase's extension.
+b:phrase_category					*g:phrase_category*
+	buffer local variable to indicate phrase's category.
 	this value is used if set.
-
 
 Example~
 >
-	" Opscode's Chef is based on Ruby, but I want chef's phrase keep 
+	" Opscode's Chef is based on Ruby, but I want chef's phrase keep
 	" separated from Ruby's one.
-	au BufNewFile,BufRead */*cookbooks/*  let b:phrase_ext = 'chef'
+	au BufNewFile,BufRead */*cookbooks/* let b:phrase_category = 'chef'
 <
 
 modeline~
 phrase.vim support original modeline.
-In example above. phrase.chef is the phrase's filename.
-If you execute |:PhraseList| from buffer `phrase.chef`
-phrase.vim try to find phrases from &filetype means, from file `phrase.rb`.
-If you want continue to search phrase from `phrase.chef`.
-You can set mode line begin with format `phrase: {ext}`.
+Used to set |b:phrase_category|.
+phrase.vim search this modeline in 'last two line' in file.
 
 Example modeline~
-in phrase.chef
+in chef.rb
 >
 	# phrase: chef
 	# vim: set ft=ruby:
@@ -112,18 +81,17 @@ in phrase.chef
 Example for Rakefile~
 .vimrc
 >
-	au BufNewFile,BufRead Rakefile let b:phrase_ext = 'rake'
+	au BufNewFile,BufRead Rakefile let b:phrase_category = 'rake'
 <
-in phrase.rake
+in rake.rb
 >
 	# phrase: rake
 <
 ==============================================================================
 COMMANDS						*phrase-commands*
 
-:PhraseEdit {ext}					 *:PhraseEdit*
-	Edit phrase of specified extension.
-	If {ext} is ommited. current |&filetype| 's default extension is used.
+:PhraseEdit {filename}					 *:PhraseEdit*
+	Edit phrase
 
 :[range]PhraseCreate					 *:PhraseCreate*
 	Create new phrase from current |:range|.
@@ -131,10 +99,8 @@ COMMANDS						*phrase-commands*
 ==============================================================================
 KEYMAP							*phrase-keymap*
 
-n <Plug>(phrase-edit)
-	Edit phrase.
-v <Plug>(phrase-create)
-	Create phrase from visually selected text.
+n_<Plug>(phrase-edit)
+v_<Plug>(phrase-create)
 
 ==============================================================================
 UNITE PLUGIN						 *phrase-unite*
@@ -151,8 +117,8 @@ CONFIGURATION EXAMPLE                               *phrase-configuration*
 >
 	let g:phrase_author  = "t9md"
 
-	nmap gp  <Plug>(phrase-edit)
-	xmap gp  <Plug>(phrase-create)
+	nmap gp <Plug>(phrase-edit)
+	xmap gp <Plug>(phrase-create)
 
 	" If you use Unite plugin
 	nnoremap <silent> <Space>p  :<C-u>Unite phrase -start-insert<CR>
@@ -178,15 +144,15 @@ My proposal about this type of repository name is `phrase-{yourname}`.
 Repository structure:~
 
 	phrase-{yourname}/phrase/{yourname}/
-	phrase-{yourname}/phrase/{yourname}/phrase.vim
-	phrase-{yourname}/phrase/{yourname}/phrase.rb
+	phrase-{yourname}/phrase/{yourname}/vim.vim
+	phrase-{yourname}/phrase/{yourname}/ruby.rb
 
 Example repository:~
   https://github.com/t9md/phrase-t9md
 
 	phrase-t9md/phrase/t9md
-	phrase-t9md/phrase/t9md/phrase.vim
-	phrase-t9md/phrase/t9md/phrase.rb
+	phrase-t9md/phrase/t9md/vim.vim
+	phrase-t9md/phrase/t9md/ruby.rb
 
 Unite phrase plugin gather phrases from directory named `phrase` in &rtp.
 So if you manage you plugin with `pathogen` or Vundle, you can also manage
@@ -201,6 +167,8 @@ BUGS							*phrase-bugs*
 ==============================================================================
 CHANGELOG						*phrase-changelog*
 
+2013-12-08:
+	- disastrous change for phrase file's naming convenion.
 2013-12-08: v0.6
 	- code rewritten
 	- eliminate phrase#list() for simplicity

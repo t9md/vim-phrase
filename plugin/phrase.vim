@@ -18,16 +18,15 @@ endfunction
 "}}}
 
 let s:options = {
-      \ 'g:phrase_debug': 0,
-      \ 'g:phrase_author': expand("$USER"),
-      \ 'g:phrase_basedir': "~/.vim/phrase",
-      \ 'g:phrase_ft_tbl': {},
+      \ 'g:phrase_author':          expand("$USER"),
+      \ 'g:phrase_basedir':         "~/.vim/phrase",
+      \ 'g:phrase_ft_tbl':          {},
       \ 'g:phrase_author_priority': {},
       \ }
 
 call s:set_options(s:options)
 
-function! s:set_phrase_ext() "{{{1
+function! s:phrase_setext() "{{{1
   " set phrase_ext by checking last 2 line in buffer.
   for line in getline( line('$') -1, line('$'))
     if line =~# 'phrase: '
@@ -41,7 +40,7 @@ endfunction
 " AutoCmd:
 augroup plugin-phrase
     autocmd!
-    autocmd BufReadPost * call <SID>set_phrase_ext()
+    autocmd BufReadPost * call <SID>phrase_setext()
 augroup END
 
 " KeyMap:

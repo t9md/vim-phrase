@@ -121,10 +121,6 @@ in phrase.rake
 ==============================================================================
 COMMANDS						*phrase-commands*
 
-:PhraseList						*:PhraseList*
-	Show phrase-list
-	<CR> to jump to actual phrase.
-
 :PhraseEdit {ext}					 *:PhraseEdit*
 	Edit phrase of specified extension.
 	If {ext} is ommited. current |&filetype| 's default extension is used.
@@ -155,7 +151,6 @@ CONFIGURATION EXAMPLE                               *phrase-configuration*
 >
 	let g:phrase_author  = "t9md"
 
-	nmap gl  <Plug>(phrase-list)
 	nmap gp  <Plug>(phrase-edit)
 	xmap gp  <Plug>(phrase-create)
 

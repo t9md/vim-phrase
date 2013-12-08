@@ -23,11 +23,11 @@ function! s:commentout(filetype, string, is_subject) "{{{1
   return join(insert(comment, string, 1), "")
 endfunction
 
-function! s:extract_title(filetype, string) "{{{1
-  let comment   = s:table.comment_for(a:filetype)
-  let comment_l = get(comment, 0)
-  let comment_r = get(comment, 1, '')
-  let pattern   = '^\V'. comment_l .'\v\s+Phrase:\s+\zs.*\ze\s*\V'. comment_r . '\v$'
+function! s:extract_subject(filetype, string) "{{{1
+  let c   = s:table.comment_for(a:filetype)
+  let c_L = escape(get(c, 0), '\')
+  let c_R = escape(get(c, 1, ''), '\')
+  let pattern   = '^\V'. c_L .'\v\s+Phrase:\s+\zs.*\ze\s*\V'. c_R . '\v$'
   return s:strip(matchstr(a:string, pattern))
 endfunction
 
@@ -41,7 +41,7 @@ function! s:ensure(expr, msg) "{{{1
   endif
 endfunction
 
-function! s:create_dir(dir) "{{{1
+function! s:mkdir(dir) "{{{1
   if inputdialog("create " . a:dir . "?[y/n] ") ==? 'y'
     call mkdir(a:dir, 'p')
   endif
@@ -52,32 +52,34 @@ let s:phrase = {}
 
 function! s:phrase.prepare(ext) "{{{1
   let prompt = "Phrase for '" . a:ext . "'"
-  let title = inputdialog(prompt, '', -1)
-  call s:ensure(title !=# - 1, 'Cancelled')
+  let subject = inputdialog(prompt, '', -1)
+  call s:ensure(subject !=# - 1, 'Cancelled')
 
-  return self._prepare(title, &filetype)
+  let body = getline(line("'<"), line("'>"))
+  return self._prepare(subject, body, &filetype)
 endfunction
 
-function! s:phrase._prepare(title, filetype) "{{{1
+function! s:phrase._prepare(subject, body, filetype) "{{{1
   return {
-        \ 'subject':   s:commentout(a:filetype, s:phrase_anchor . a:title, 1),
+        \ 'subject':   s:commentout(a:filetype, s:phrase_anchor . a:subject, 1),
         \ 'separator': s:commentout(a:filetype, s:phrase_separator, 0),
-        \ 'body':      getline(line("'<"), line("'>"))
+        \ 'body':      a:body,
         \ }
 endfunction
 
 function! s:phrase.edit(ext) "{{{1
   let path = simplify(s:phrase_dir . "/phrase.". a:ext)
   if !isdirectory(s:phrase_dir)
-    call s:create_dir(s:phrase_dir)
+    call s:mkdir(s:phrase_dir)
+    call s:ensure(isdirectory(s:phrase_dir), 
+          \ "fail to create dir '" . s:phrase_dir . "'")
   endif
-  call s:ensure(isdirectory(s:phrase_dir), "fail to create dir '" . s:phrase_dir . "'")
 
   let winno = bufwinnr(path)
   if winno != -1
     execute winno . ':wincmd w'
   else
-    let opt = winwidth(0) * 2 < winheight(0) * 5 ? "" : "vertical"
+    let opt = ( winwidth(0) * 2 ) < (winheight(0) * 5 ) ? '' : 'vertical'
     exe 'belowright' opt 'split' path
   endif
 endfunction
@@ -123,7 +125,7 @@ function! s:phrase._parse(file, filetype) "{{{1
     if line =~# s:phrase_anchor
       call add(R, {
             \ 'author': author,
-            \ 'title': s:extract_title(a:filetype, line),
+            \ 'subject': s:extract_subject(a:filetype, line),
             \ 'file': a:file,
             \ 'line': idx + 1,
             \ })
@@ -146,45 +148,41 @@ endfunction
 function! phrase#start(...) "{{{1
   call call(s:phrase.start, a:000, s:phrase)
 endfunction
+
 function! phrase#all(...) "{{{1
   return call(s:phrase.all, a:000, s:phrase)
 endfunction
+
 function! phrase#files(...) "{{{1
   return call(s:phrase.files, a:000, s:phrase)
 endfunction
 " }}}
 
 " Test: {{{1
-finish
 if expand("%:p") !=# expand("<sfile>:p")
   finish
 endif
 
-function! s:test(ft, str) "{{{1
-  echo "ft   : " . a:ft
-  echo "ext  : " . s:table.ext_for(a:ft)
-  let cmted = s:commentify(a:ft, " Phrase: " .a:str, 1)
-  echo "cmted: " . cmted
-  let title = s:extract_title(a:ft, cmted)
-  echo "title: " . title
-  echo "origi: " . a:str
-  if a:str !=# title
-    echo 'ERR'
-  endif
-  echo ''
-endfunction
-
-
 function! s:run_test() "{{{1
-  let str = "ABCDEFG"
-  let ft = ''
-  call s:test(ft, str)
-  call s:test('haskell', str)
-  call s:test('vim', str)
-  " echo PP(s:table)
-  for ft in keys(s:table._table)
-    " echo ft
-    call s:test(ft, str)
+  let subject = 'Sample Phrase for filetype: '
+  let body = getline(line("'<"), line("'>"))
+  let body = ['this is', 'sample', 'body' ]
+  for filetype in keys(s:table._table)
+    " phrase create test
+    let subject_org = subject . filetype
+    let phrase =  s:phrase._prepare(subject_org, body, filetype)
+    echo join([ phrase.subject, phrase.separator ] + phrase.body + [''],"\n")
+
+    " extract subject
+    let subject_extracted = s:extract_subject(filetype, phrase.subject)
+    if subject_org !=# subject_extracted
+      echo 'ERR: ' . filetype
+      PP subject_org
+      PP subject_extracted
+      " throw filetype
+      echo ''
+      echo ''
+    endif
   endfor
 endfunction
 

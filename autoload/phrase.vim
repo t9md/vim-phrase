@@ -104,8 +104,6 @@ function! s:phrase.start(ope, ...) "{{{1
     if a:ope == 'create'
       let phrase = self.prepare(category, &filetype)
       call s:ensure(!empty(phrase), 'empty phrase')
-      echo phrase.subject
-      " call s:plog(phrase.subject)
       call s:ensure( strdisplaywidth(phrase.subject) <= s:phrase_header_width,
             \'phrase subject width exceeed '. s:phrase_header_width )
     endif

@@ -1,6 +1,6 @@
 " GUARD:
 if exists('g:loaded_phrase')
-  " finish
+  finish
 endif
 let g:loaded_phrase = 1
 let s:old_cpo = &cpo

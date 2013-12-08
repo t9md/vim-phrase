@@ -3,11 +3,12 @@ function! s:plog(msg) "{{{1
 endfunction
 "}}}
 
-let g:phrase_anchor         = " Phrase: "
-let g:phrase_header_width   = 78
-let g:phrase_separator      = '='
-let g:phrase_dir            = simplify(expand(g:phrase_basedir . '/phrase/'. g:phrase_author))
-" call s:plog(g:phrase_dir)
+let s:CONSTANTS = {
+      \ 'anchor': ' Phrase: ',
+      \ 'header_width': 78,
+      \ 'separator': '=',
+      \ 'phrasedir': simplify(expand(g:phrase_basedir . '/phrase/'. g:phrase_author)),
+      \ }
 
 " Utility:
 let s:table = phrase#table#get()
@@ -19,9 +20,9 @@ function! s:commentout(filetype, string, is_subject) "{{{1
     let string = len(comment) == 1
           \ ? a:string
           \ : a:string . repeat(" ",
-          \    g:phrase_header_width - (comment_width + strdisplaywidth(a:string)))
+          \    s:CONSTANTS.header_width - (comment_width + strdisplaywidth(a:string)))
   else
-    let string = repeat('=', g:phrase_header_width - comment_width)
+    let string = repeat('=', s:CONSTANTS.header_width - comment_width)
   endif
   return join(insert(comment, string, 1), "")
 endfunction
@@ -52,7 +53,6 @@ endfunction
 "}}}
 
 let s:phrase = {}
-
 function! s:phrase.prepare(category, filetype) "{{{1
   let prompt = printf('[%s] Phrase subject: ', a:category)
   let subject = inputdialog(prompt, '', -1)
@@ -66,8 +66,8 @@ function! s:phrase._prepare(subject, body, filetype) "{{{1
   " FIXME commentout need to be delayed to use phrasefile's &filetype
   " so that gather phrase from other &filetype's file.
   return {
-        \ 'subject':   s:commentout(a:filetype, g:phrase_anchor . a:subject, 1),
-        \ 'separator': s:commentout(a:filetype, g:phrase_separator, 0),
+        \ 'subject':   s:commentout(a:filetype, s:CONSTANTS.anchor . a:subject, 1),
+        \ 'separator': s:commentout(a:filetype, s:CONSTANTS.separator, 0),
         \ 'body':      a:body,
         \ }
 endfunction
@@ -87,7 +87,7 @@ endfunction
 function! s:phrase.start(ope, ...) "{{{1
   try
     if !empty(a:000)
-      let phrase_file = g:phrase_dir . '/' . a:1
+      let phrase_file = s:CONSTANTS.phrasedir . '/' . a:1
       let category    = fnamemodify(a:1, ':r')
       call s:ensure(!empty(category), 'empty category or &filetype')
     else
@@ -99,7 +99,7 @@ function! s:phrase.start(ope, ...) "{{{1
         let ext = inputdialog(prompt, expand('%:e') , '')
         call s:ensure(!empty(ext), 'empty extention')
 
-        let phrase_file = g:phrase_dir . '/' . category . '.' . ext
+        let phrase_file = s:CONSTANTS.phrasedir . '/' . category . '.' . ext
       endif
     endif
 
@@ -107,14 +107,14 @@ function! s:phrase.start(ope, ...) "{{{1
     if a:ope == 'create'
       let phrase = self.prepare(category, &filetype)
       call s:ensure(!empty(phrase), 'empty phrase')
-      call s:ensure( strdisplaywidth(phrase.subject) <= g:phrase_header_width,
-            \'phrase subject width exceeed '. g:phrase_header_width )
+      call s:ensure( strdisplaywidth(phrase.subject) <= s:CONSTANTS.header_width,
+            \'phrase subject width exceeed '. s:CONSTANTS.header_width )
     endif
 
-    if !isdirectory(g:phrase_dir)
-      call s:mkdir(g:phrase_dir)
-      call s:ensure(isdirectory(g:phrase_dir), 
-            \ "fail to create dir '" . g:phrase_dir . "'")
+    if !isdirectory(s:CONSTANTS.phrasedir)
+      call s:mkdir(s:CONSTANTS.phrasedir)
+      call s:ensure(isdirectory(s:CONSTANTS.phrasedir), 
+            \ "fail to create dir '" . s:CONSTANTS.phrasedir . "'")
     endif
     " call s:plog(phrase_file)
     call self.edit(phrase_file)
@@ -129,7 +129,7 @@ function! s:phrase.start(ope, ...) "{{{1
 endfunction
 
 function! s:phrase.findfile(category)
-  let files = split(globpath(g:phrase_dir, a:category . '.*'), "\n")
+  let files = split(globpath(s:CONSTANTS.phrasedir, a:category . '.*'), "\n")
   if len(files) == 1
     return files[0]
   endif
@@ -173,7 +173,7 @@ function! s:phrase._parse(file, filetype) "{{{1
   let author = fnamemodify(a:file, ":h:t")
 
   for [idx, line] in map(readfile(a:file),'[v:key, v:val]')
-    if line =~# g:phrase_anchor
+    if line =~# s:CONSTANTS.anchor
       call add(R, {
             \ 'author': author,
             \ 'subject': s:extract_subject(a:filetype, line),
@@ -191,7 +191,6 @@ function! s:phrase.get_category() "{{{1
   return get(b:, 'phrase_category', &filetype)
 endfunction
 "}}}
-
 " Public:
 function! phrase#get_category() "{{{1
   return s:phrase.get_category()
@@ -199,7 +198,7 @@ endfunction
 
 function! phrase#myfiles(A, L, P) "{{{1
   let R = []
-  for file in split(globpath(g:phrase_dir, '*'), "\n")
+  for file in split(globpath(s:CONSTANTS.phrasedir, '*'), "\n")
     let f = fnamemodify(file, ':p:t')
     if f =~# '^\V' . a:A
       call add(R, f)
@@ -260,7 +259,6 @@ endfunction
 
 " call s:run_test()
 "}}}
-
 " echo s:phrase.findfile('help')
 
 " vim: foldmethod=marker

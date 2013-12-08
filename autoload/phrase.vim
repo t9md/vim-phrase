@@ -94,7 +94,9 @@ function! s:phrase.start(ope, ...) "{{{1
         let prompt = printf('[%s] file extension:', category)
         let ext = inputdialog(prompt, expand('%:e') , '')
         call s:ensure(!empty(ext), 'empty extention')
-        let phrase_file = category . '.' . ext
+
+        let phrase_file = expand(g:phrase_basedir . '/'. g:phrase_author)
+              \ . '/' . category . '.' . ext
       endif
     endif
 
@@ -242,5 +244,6 @@ endfunction
 " call s:run_test()
 "}}}
 
+" echo s:phrase.findfile('help')
 
 " vim: foldmethod=marker

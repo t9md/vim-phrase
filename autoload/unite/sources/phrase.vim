@@ -12,19 +12,23 @@ let s:unite_source = {
       \ }
 
 function! s:unite_source.hooks.on_init(args, context) "{{{
-  let a:context.source__ext      = phrase#get_ext()
+  let a:context.source__category = phrase#get_category()
   let a:context.source__filetype = &filetype
+  let a:context.source__ext      = expand('%:e')
 endfunction"}}}
 
 function! s:unite_source.gather_candidates(args, context)
-  if empty(a:context.source__ext)
+  if empty(a:context.source__category)
     return []
   endif
-  call unite#print_message("[phrase]: " . a:context.source__ext)
+  call unite#print_message("[phrase]: " . a:context.source__category)
 
   let index = 0
   let candidates = []
-  for phrase in phrase#all(a:context.source__ext, a:context.source__filetype)
+  for phrase in phrase#all(
+        \ a:context.source__category,
+        \ a:context.source__filetype,
+        \ a:context.source__ext)
     let index += 1
     let priority = get(g:phrase_author_priority,
           \ phrase.author, s:phrase_default_author_priority) * -1000000

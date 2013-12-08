@@ -4,8 +4,8 @@ endfunction
 "}}}
 
 let s:phrase_anchor         = " Phrase: "
-let s:phrase_header_width   = 70
-let s:phrase_separator      = repeat('=', s:phrase_header_width)
+let s:phrase_header_width   = 78
+let s:phrase_separator      = '='
 let s:phrase_dir            = expand(g:phrase_basedir . '/'. g:phrase_author)
 
 " Utility:
@@ -13,12 +13,14 @@ let s:table = phrase#table#get()
 
 function! s:commentout(filetype, string, is_subject) "{{{1
   let comment = copy(s:table.comment_for(a:filetype))
+  let comment_width = len(join(comment, ''))
   if a:is_subject
     let string = len(comment) == 1
           \ ? a:string
-          \ : a:string . repeat(" ", s:phrase_header_width - len(a:string))
+          \ : a:string . repeat(" ",
+          \    s:phrase_header_width - (comment_width + len(a:string)))
   else
-    let string = a:string
+    let string = repeat('=', s:phrase_header_width - comment_width)
   endif
   return join(insert(comment, string, 1), "")
 endfunction
@@ -50,13 +52,13 @@ endfunction
 
 let s:phrase = {}
 
-function! s:phrase.prepare(ext) "{{{1
-  let prompt = "Phrase for '" . a:ext . "'"
+function! s:phrase.prepare(category, filetype) "{{{1
+  let prompt = "Phrase subject: '" . a:category . "'"
   let subject = inputdialog(prompt, '', -1)
   call s:ensure(subject !=# - 1, 'Cancelled')
 
   let body = getline(line("'<"), line("'>"))
-  return self._prepare(subject, body, &filetype)
+  return self._prepare(subject, body, a:filetype)
 endfunction
 
 function! s:phrase._prepare(subject, body, filetype) "{{{1
@@ -67,34 +69,49 @@ function! s:phrase._prepare(subject, body, filetype) "{{{1
         \ }
 endfunction
 
-function! s:phrase.edit(ext) "{{{1
-  let path = simplify(s:phrase_dir . "/phrase.". a:ext)
-  if !isdirectory(s:phrase_dir)
-    call s:mkdir(s:phrase_dir)
-    call s:ensure(isdirectory(s:phrase_dir), 
-          \ "fail to create dir '" . s:phrase_dir . "'")
-  endif
+function! s:phrase.edit(phrase_file) "{{{1
 
-  let winno = bufwinnr(path)
+  let winno = bufwinnr(a:phrase_file)
   if winno != -1
     execute winno . ':wincmd w'
   else
     let opt = ( winwidth(0) * 2 ) < (winheight(0) * 5 ) ? '' : 'vertical'
-    exe 'belowright' opt 'split' path
+    exe 'belowright' opt 'split' a:phrase_file
   endif
 endfunction
 
 function! s:phrase.start(ope, ...) "{{{1
   try
-    let ext = empty(a:000) ? self.get_ext() : a:1
-    call s:ensure(!empty(ext), 'empty extention')
-
-    if a:ope == 'create'
-      let phrase = self.prepare(ext)
-      call s:ensure(!empty(phrase), 'empty phrase')
+    if !empty(a:000)
+      let phrase_file = s:phrase_dir . '/' . a:1
+      let category    = fnamemodify(a:1, ':r')
+      call s:ensure(!empty(category), 'empty category or &filetype')
+    else
+      let category = self.get_category()
+      call s:ensure(!empty(category), 'empty category or &filetype')
+      let phrase_file = self.findfile(category)
+      if empty(phrase_file)
+        let prompt = printf('[%s] file extension:', category)
+        let ext = inputdialog(prompt, expand('%:e') , '')
+        call s:ensure(!empty(ext), 'empty extention')
+        let phrase_file = category . '.' . ext
+      endif
     endif
 
-    call self.edit(ext)
+
+    if a:ope == 'create'
+      let phrase = self.prepare(category, &filetype)
+      call s:ensure(!empty(phrase), 'empty phrase')
+      call s:ensure( len(phrase.subject) <= s:phrase_header_width,
+            \'phrase subject width exceeed '. s:phrase_header_width )
+    endif
+
+    if !isdirectory(s:phrase_dir)
+      call s:mkdir(s:phrase_dir)
+      call s:ensure(isdirectory(s:phrase_dir), 
+            \ "fail to create dir '" . s:phrase_dir . "'")
+    endif
+    call self.edit(phrase_file)
 
     if a:ope ==# 'create'
       call append(0, [ phrase.subject, phrase.separator ] + phrase.body + [''])
@@ -105,13 +122,28 @@ function! s:phrase.start(ope, ...) "{{{1
   endtry
 endfunction
 
-function! s:phrase.files(ext)
-  return split(globpath(&runtimepath, 'phrase/*/'. 'phrase.'.a:ext),'\n')
+function! s:phrase.findfile(category)
+  let files = split(globpath(s:phrase_dir, a:category . '.*'), "\n")
+  if len(files) == 1
+    return files[0]
+  endif
+  let ext = expand('%:e')
+  for file in files
+    if file =~# ext
+      return file
+    endif
+  endfor
 endfunction
 
-function! s:phrase.all(ext, filetype) "{{{1
+function! s:phrase.files(category, ext)
+  let phrase_file = a:category . '.' . a:ext
+  return split(globpath(&runtimepath, 'phrase/*/'. phrase_file),'\n')
+endfunction
+
+function! s:phrase.all(category, filetype, ext) "{{{1
+  " category is not necessarily same as filetype. ex) chef.rb
   let R = []
-  for file in self.files(a:ext)
+  for file in self.files(a:category, a:ext)
     call extend(R,  self._parse(file, a:filetype))
   endfor
   return R
@@ -133,16 +165,28 @@ function! s:phrase._parse(file, filetype) "{{{1
   endfor
   return R
 endfunction
+" echo PP( s:phrase.all('vim', 'vim', 'vim'))
 
-
-function! s:phrase.get_ext()
-  return (exists('b:phrase_ext') && !empty('b:phrase_ext'))
-        \ ? b:phrase_ext : s:table.ext_for(&filetype)
+function! s:phrase.get_category() "{{{1
+  " category is not necessarily same as filetype. ex) chef.rb
+  return get(b:, 'phrase_category', &filetype)
 endfunction
+"}}}
 
 " Public:
-function! phrase#get_ext() "{{{1
-  return s:phrase.get_ext()
+function! phrase#get_category() "{{{1
+  return s:phrase.get_category()
+endfunction
+
+function! phrase#categories(A, L, P) "{{{1
+  let R = []
+  for file in split(globpath(s:phrase_dir, '*'), "\n")
+    let f = fnamemodify(file, ':p:t')
+    if f =~# '^\V' . a:A
+      call add(R, f)
+    endif
+  endfor
+  return R
 endfunction
 
 function! phrase#start(...) "{{{1
@@ -155,6 +199,10 @@ endfunction
 
 function! phrase#files(...) "{{{1
   return call(s:phrase.files, a:000, s:phrase)
+endfunction
+
+function! phrase#list(...) "{{{1
+  return call(s:phrase.list, a:000, s:phrase)
 endfunction
 " }}}
 
@@ -186,9 +234,12 @@ function! s:run_test() "{{{1
   endfor
 endfunction
 
+" echo s:phrase.files('vim', 'vim')
+
+" echo PP( s:phrase.list('vim') )
 " PP table._table
 
-call s:run_test()
+" call s:run_test()
 "}}}
 
 

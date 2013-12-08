@@ -1,6 +1,6 @@
 " GUARD:
 if exists('g:loaded_phrase')
-  finish
+  " finish
 endif
 let g:loaded_phrase = 1
 let s:old_cpo = &cpo
@@ -26,11 +26,11 @@ let s:options = {
 
 call s:set_options(s:options)
 
-function! s:phrase_setext() "{{{1
+function! s:phrase_set_category() "{{{1
   " set phrase_ext by checking last 2 line in buffer.
-  for line in getline( line('$') -1, line('$'))
+  for line in getline(line('$') -1, line('$'))
     if line =~# 'phrase: '
-      let b:phrase_ext = matchstr(line,'phrase: \zs.*')
+      let b:phrase_category = matchstr(line,'phrase: \zs.*')
       return
     endif
   endfor
@@ -40,7 +40,7 @@ endfunction
 " AutoCmd:
 augroup plugin-phrase
     autocmd!
-    autocmd BufReadPost * call <SID>phrase_setext()
+    autocmd BufReadPost * call <SID>phrase_set_category()
 augroup END
 
 " KeyMap:
@@ -48,7 +48,9 @@ nnoremap <silent> <Plug>(phrase-edit)   :<C-u>call phrase#start('edit')<CR>
 xnoremap <silent> <Plug>(phrase-create) :<C-u>call phrase#start('create')<CR>
 
 " Command:
-command! -nargs=?        PhraseEdit   :call phrase#start('edit'  , <f-args>)
+command! -nargs=? -complete=customlist,phrase#categories
+      \ PhraseEdit   :call phrase#start('edit'  , <f-args>)
+
 command! -nargs=? -range PhraseCreate :call phrase#start('create', <f-args>)
 
 " Finish:

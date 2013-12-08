@@ -306,7 +306,7 @@ function! s:table.init() "{{{1
     let [ filetype, ext; comment ] =  split(entry,'  \+')
     let self._table[filetype] = { 'ext': ext, 'cmt': comment }
   endfor
-  call extend(self._table, g:phrase_ft_tbl, 'force')
+  " call extend(self._table, g:phrase_ft_tbl, 'force')
 endfunction
 
 function! s:table.get(filetype) "{{{1

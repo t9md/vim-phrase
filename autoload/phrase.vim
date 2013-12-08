@@ -18,7 +18,7 @@ function! s:commentout(filetype, string, is_subject) "{{{1
     let string = len(comment) == 1
           \ ? a:string
           \ : a:string . repeat(" ",
-          \    s:phrase_header_width - (comment_width + len(a:string)))
+          \    s:phrase_header_width - (comment_width + strdisplaywidth(a:string)))
   else
     let string = repeat('=', s:phrase_header_width - comment_width)
   endif
@@ -53,7 +53,7 @@ endfunction
 let s:phrase = {}
 
 function! s:phrase.prepare(category, filetype) "{{{1
-  let prompt = "Phrase subject: '" . a:category . "'"
+  let prompt = printf('[%s] Phrase subject: ', a:category)
   let subject = inputdialog(prompt, '', -1)
   call s:ensure(subject !=# - 1, 'Cancelled')
 
@@ -104,7 +104,9 @@ function! s:phrase.start(ope, ...) "{{{1
     if a:ope == 'create'
       let phrase = self.prepare(category, &filetype)
       call s:ensure(!empty(phrase), 'empty phrase')
-      call s:ensure( len(phrase.subject) <= s:phrase_header_width,
+      echo phrase.subject
+      " call s:plog(phrase.subject)
+      call s:ensure( strdisplaywidth(phrase.subject) <= s:phrase_header_width,
             \'phrase subject width exceeed '. s:phrase_header_width )
     endif
 
@@ -180,7 +182,7 @@ function! phrase#get_category() "{{{1
   return s:phrase.get_category()
 endfunction
 
-function! phrase#categories(A, L, P) "{{{1
+function! phrase#myfiles(A, L, P) "{{{1
   let R = []
   for file in split(globpath(s:phrase_dir, '*'), "\n")
     let f = fnamemodify(file, ':p:t')
@@ -214,7 +216,7 @@ if expand("%:p") !=# expand("<sfile>:p")
 endif
 
 function! s:run_test() "{{{1
-  let subject = 'Sample Phrase for filetype: '
+  let subject = 'Sample Phrase for filetype: コレはサンプルです。'
   let body = getline(line("'<"), line("'>"))
   let body = ['this is', 'sample', 'body' ]
   for filetype in keys(s:table._table)

@@ -1,6 +1,6 @@
 " GUARD:
 if exists('g:loaded_phrase')
-  " finish
+  finish
 endif
 let g:loaded_phrase = 1
 let s:old_cpo = &cpo
@@ -20,7 +20,6 @@ endfunction
 let s:options = {
       \ 'g:phrase_author':          expand("$USER"),
       \ 'g:phrase_basedir':         "~/.vim/phrase",
-      \ 'g:phrase_ft_tbl':          {},
       \ 'g:phrase_author_priority': {},
       \ }
 
@@ -48,7 +47,7 @@ nnoremap <silent> <Plug>(phrase-edit)   :<C-u>call phrase#start('edit')<CR>
 xnoremap <silent> <Plug>(phrase-create) :<C-u>call phrase#start('create')<CR>
 
 " Command:
-command! -nargs=? -complete=customlist,phrase#categories
+command! -nargs=? -complete=customlist,phrase#myfiles
       \ PhraseEdit   :call phrase#start('edit'  , <f-args>)
 
 command! -nargs=? -range PhraseCreate :call phrase#start('create', <f-args>)

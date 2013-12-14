@@ -55,37 +55,36 @@ g:phrase_basedir					*g:phrase_basedir*
 	Default~
 	  $HOME/.vim/phrase
 
-b:phrase_category					*g:phrase_category*
-	buffer local variable to indicate phrase's category.
-	this value is used if set.
+b:phrase_file					*g:phrase_file*
+	buffer local variable to indicate phrase file
 
 Example~
 >
 	" Opscode's Chef is based on Ruby, but I want chef's phrase keep
 	" separated from Ruby's one.
-	au BufNewFile,BufRead */*cookbooks/* let b:phrase_category = 'chef'
+	au BufNewFile,BufRead */*cookbooks/* let b:phrase_file = 'chef'
 <
 
 modeline~
 phrase.vim support original modeline.
-Used to set |b:phrase_category|.
+Used to set |b:phrase_file|.
 phrase.vim search this modeline in 'last two line' in file.
 
 Example modeline~
 in chef.rb
 >
-	# phrase: chef
+	# phrase_file: chef.rb
 	# vim: set ft=ruby:
 <
 
 Example for Rakefile~
 .vimrc
 >
-	au BufNewFile,BufRead Rakefile let b:phrase_category = 'rake'
+	au BufNewFile,BufRead Rakefile let b:phrase_file = 'rake.rb'
 <
 in rake.rb
 >
-	# phrase: rake
+	# phrase_file: rake.rb
 <
 ==============================================================================
 COMMANDS						*phrase-commands*
@@ -144,15 +143,15 @@ My proposal about this type of repository name is `phrase-{yourname}`.
 Repository structure:~
 
 	phrase-{yourname}/phrase/{yourname}/
-	phrase-{yourname}/phrase/{yourname}/vim.vim
-	phrase-{yourname}/phrase/{yourname}/ruby.rb
+	phrase-{yourname}/phrase/{yourname}/phrase__vim.vim
+	phrase-{yourname}/phrase/{yourname}/phrase__ruby.rb
 
 Example repository:~
   https://github.com/t9md/phrase-t9md
 
 	phrase-t9md/phrase/t9md
-	phrase-t9md/phrase/t9md/vim.vim
-	phrase-t9md/phrase/t9md/ruby.rb
+	phrase-t9md/phrase/t9md/phrase__vim.vim
+	phrase-t9md/phrase/t9md/phrase__ruby.rb
 
 Unite phrase plugin gather phrases from directory named `phrase` in &rtp.
 So if you manage you plugin with `pathogen` or Vundle, you can also manage
@@ -160,7 +159,71 @@ phrases as easily as other plugin.
 For Vundle you can import t9md's phrase by setting following line in .vimrc
 >
 	Bundle: t9md/phrase-t9md
+	or
+	NeoBundle: t9md/phrase-t9md
 <
+==============================================================================
+FIND-ORDER						 *phrase-find-order*
+
+Phrase file name~
+
+Phrase file is merely normal file, typically its simple txt file containing
+some set of example source code written in some programming languages.
+The name of phrase file should follow following convention.
+
+* phrase__{category}.{ext}
+
+for {category}, it is ordinarily equal to |&filetype|but sometime, its
+represent some sort of category which that phrase file aiming to.
+
+{ext} is extention for file.
+
+ex)
+phrase__ruby.rb
+phrase__perl.pl
+
+the above example are phrase file for ruby and perl.
+
+phrase__rake.rb
+phrase__chef.rb
+phrase__vagrant.rb
+
+above example are phrase file for Rakefile, Opscode Chef's and for Vagrant.
+Each of these technology is written their own DSL(internal DSL designed using
+Ruby). All of them are esentially Ruby, and should treated as ruby file from
+vim's view.
+
+So, category is sometime may different from |&filetype|, and {ext} provide
+hint to Vim to determine setting |&filetype|.
+
+Author's phrase~
+
+Directory: {g:phrase_basedir}/phrase/{g:phrase_author}/{phrase_file}
+
+search order for {phrase_file}
+ - b:phrase_file
+ - {&filetype}.{current_ext}
+ - {&filetype}.*
+
+All phrase~
+
+Directory1: {g:phrase_basedir}/phrase/{g:phrase_author}/{phrase_file}
+Directory2: {&runtimepath}/phrase/*/{phrase_file}
+
+
+Phrase Comment determination~
+
+phrase.vim maintaine comment syntax for each programming languages by itself.
+trying to find proper comment syntax from current {phrase_file}.
+Comment string is suded to insert phrase header.
+
+Phrase Header format~
+
+as syntax perspective, it merely comment that follow following format.
+
+
+
+
 ==============================================================================
 BUGS							*phrase-bugs*
 

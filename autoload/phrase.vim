@@ -14,7 +14,7 @@ let s:CONSTANTS = {
 let s:table = phrase#table#get()
 
 function! s:commentout(filetype, string, is_subject) "{{{1
-  let comment = copy(s:table.comment_for(a:filetype))
+  let comment       = copy(s:table.comment_for(a:filetype))
   let comment_width = len(join(comment, ''))
   if a:is_subject
     let string = len(comment) == 1
@@ -46,34 +46,25 @@ function! s:ensure(expr, msg) "{{{1
 endfunction
 
 function! s:mkdir(dir) "{{{1
-  if input("create phrase basedir '" . a:dir . " '[(y)/n]?: ", 'y') ==? 'y'
-    call mkdir(a:dir, 'p')
-  endif
+  let ret = confirm('create basedir [' . a:dir . '] ?', "&No\n&Yes", 1)
+  call s:ensure(ret ==# 2, "Cancelled")
+  call mkdir(a:dir, 'p')
 endfunction
 "}}}
 
 let s:phrase = {}
-function! s:phrase.prepare(category, filetype) "{{{1
-  let prompt = printf('[%s] Phrase subject: ', a:category)
+function! s:phrase.prepare(body, filetype) "{{{1
+  let prompt = 'Phrase subject: '
   let subject = inputdialog(prompt, '', -1)
-  call s:ensure(subject !=# - 1, 'Cancelled')
-
-  let body = getline(line("'<"), line("'>"))
-  return self._prepare(subject, body, a:filetype)
-endfunction
-
-function! s:phrase._prepare(subject, body, filetype) "{{{1
-  " FIXME commentout need to be delayed to use phrasefile's &filetype
-  " so that gather phrase from other &filetype's file.
+  call s:ensure(subject !=# -1, 'Cancelled')
   return {
-        \ 'subject':   s:commentout(a:filetype, s:CONSTANTS.anchor . a:subject, 1),
-        \ 'separator': s:commentout(a:filetype, s:CONSTANTS.separator, 0),
+        \ 'subject':  subject,
+        \ 'separator': s:CONSTANTS.separator,
         \ 'body':      a:body,
         \ }
 endfunction
 
 function! s:phrase.edit(phrase_file) "{{{1
-
   let winno = bufwinnr(a:phrase_file)
   if winno != -1
     execute winno . ':wincmd w'
@@ -83,88 +74,54 @@ function! s:phrase.edit(phrase_file) "{{{1
   endif
 endfunction
 
+function! s:phrase.search_dirs() "{{{1
+  let base = expand(g:phrase_basedir)
+  let rtp  = split(&runtimepath, ',')
 
-function! s:phrase.start(ope, ...) "{{{1
-  try
-    if !empty(a:000)
-      let phrase_file = s:CONSTANTS.phrasedir . '/' . a:1
-      let category    = fnamemodify(a:1, ':r')
-      call s:ensure(!empty(category), 'empty category or &filetype')
-    else
-      let category = self.get_category()
-      call s:ensure(!empty(category), 'empty category or &filetype')
-      let phrase_file = self.findfile(category)
-      if empty(phrase_file)
-        let prompt = printf('[%s] file extension:', category)
-        let ext = inputdialog(prompt, expand('%:e') , '')
-        call s:ensure(!empty(ext), 'empty extention')
-
-        let phrase_file = s:CONSTANTS.phrasedir . '/' . category . '.' . ext
-      endif
-    endif
-
-
-    if a:ope == 'create'
-      let phrase = self.prepare(category, &filetype)
-      call s:ensure(!empty(phrase), 'empty phrase')
-      call s:ensure( strdisplaywidth(phrase.subject) <= s:CONSTANTS.header_width,
-            \'phrase subject width exceeed '. s:CONSTANTS.header_width )
-    endif
-
-    if !isdirectory(s:CONSTANTS.phrasedir)
-      call s:mkdir(s:CONSTANTS.phrasedir)
-      call s:ensure(isdirectory(s:CONSTANTS.phrasedir), 
-            \ "fail to create dir '" . s:CONSTANTS.phrasedir . "'")
-    endif
-    " call s:plog(phrase_file)
-    call self.edit(phrase_file)
-
-    if a:ope ==# 'create'
-      call append(0, [ phrase.subject, phrase.separator ] + phrase.body + [''])
-      execute "normal! 3ggV". (len( phrase.body ) - 1). "jo"
-    endif
-  catch /phrase\.vim/
-    echom v:exception
-  endtry
-endfunction
-
-function! s:phrase.findfile(category)
-  let files = split(globpath(s:CONSTANTS.phrasedir, a:category . '.*'), "\n")
-  if len(files) == 1
-    return files[0]
-  endif
-  let ext = expand('%:e')
-  for file in files
-    if file =~# ext
-      return file
-    endif
-  endfor
-endfunction
-
-function! s:phrase.files(category, ext)
-  " if ext is empty, search with only category
-  let phrase_file = a:category . '.' . (empty(a:ext) ? '*' : a:ext)
-
-  if !exists('s:search_dir')
-    let dir = expand(g:phrase_basedir)
-    let rtp = split(&runtimepath, ',')
-    if index(rtp, expand(g:phrase_basedir)) == -1
-      " insert author's dir as first element
-      let s:search_dir = join(insert(rtp, dir, 0), ',')
-    else
-      let s:search_dir = &runtimepath
-    endif
-  endif
-  return split(globpath(s:search_dir, 'phrase/*/'. phrase_file),'\n')
-endfunction
-
-function! s:phrase.all(category, filetype, ext) "{{{1
-  " category is not necessarily same as filetype. ex) chef.rb
-  " call s:plog([a:category, a:filetype, a:ext])
   let R = []
-  for file in self.files(a:category, a:ext)
-    call extend(R,  self._parse(file, a:filetype))
+  if index(rtp, base)  == - 1
+    call insert(rtp, base, 0)
+  else
+    let R = rtp
+  endif
+  return R
+endfunction
+
+function! s:phrase.find(who, ...) "{{{1
+  let patterns = !empty(a:000) ? a:000 : self.file_patterns()
+  let R = []
+  for pattern in patterns
+    call extend(R, split(s:phrase._find(a:who, pattern), "\n"))
+    if !empty(R)
+      return R
+    endif
   endfor
+  return ''
+endfunction
+
+function! s:phrase.find_one(...) "{{{1
+  let found = call(self.find, a:000, self)
+  return !empty(found) ? found[0] : ''
+endfunction
+
+function! s:phrase._find(who, pattern) "{{{1
+  let dirs = join(self.search_dirs(), ',')
+  let pattern = join([ 'phrase', a:who, a:pattern ], '/')
+  return globpath(dirs, pattern)
+endfunction
+
+function! s:phrase.file_patterns() "{{{1
+  let R = []
+  let file = get(b:, 'phrase_file', '')
+  if !empty(file)
+    return add(R, file)
+  endif
+  let prefix = 'phrase__' . &filetype
+  let ext = expand('%:e')
+  if !empty(ext)
+    call add(R, prefix . '.' . ext)
+  endif
+  call add(R, prefix . '.'. '*')
   return R
 endfunction
 
@@ -184,18 +141,17 @@ function! s:phrase._parse(file, filetype) "{{{1
   endfor
   return R
 endfunction
-" echo PP( s:phrase.all('vim', 'vim', 'vim'))
 
-function! s:phrase.get_category() "{{{1
-  " category is not necessarily same as filetype. ex) chef.rb
-  return get(b:, 'phrase_category', &filetype)
+function! s:phrase.mkdir() "{{{1
+  if !isdirectory(s:CONSTANTS.phrasedir)
+    call s:mkdir(s:CONSTANTS.phrasedir)
+    call s:ensure(isdirectory(s:CONSTANTS.phrasedir), 
+          \ "fail to create dir '" . s:CONSTANTS.phrasedir . "'")
+  endif
 endfunction
 "}}}
-" Public:
-function! phrase#get_category() "{{{1
-  return s:phrase.get_category()
-endfunction
 
+" Public:
 function! phrase#myfiles(A, L, P) "{{{1
   let R = []
   for file in split(globpath(s:CONSTANTS.phrasedir, '*'), "\n")
@@ -207,20 +163,56 @@ function! phrase#myfiles(A, L, P) "{{{1
   return R
 endfunction
 
-function! phrase#start(...) "{{{1
-  call call(s:phrase.start, a:000, s:phrase)
+
+function! phrase#edit(...) "{{{1
+  try
+    call s:phrase.mkdir()
+    let file = call(s:phrase.find_one, [g:phrase_author] + a:000, s:phrase)
+    if empty(file)
+      let ext = expand('%:e')
+      let prompt = "Phrase file name? File name format\nphrase__{category}.{ext}: "
+      echohl Type
+      let _file = input(prompt, 'phrase__' . &filetype . '.' . ext)
+      echohl Normal
+      let file = join([s:CONSTANTS.phrasedir, _file], '/')
+    endif
+    call s:phrase.edit(file)
+  catch /phrase\.vim/
+    echom v:exception
+  endtry
+endfunction
+
+
+function! phrase#create(...) range "{{{1
+  try
+    let body = getline(a:firstline, a:lastline)
+    let phrase = s:phrase.prepare(body, &filetype)
+    call s:ensure(!empty(phrase), 'empty phrase')
+
+    call call('phrase#edit', a:000)
+
+    " commentout need to be delayed to use phrasefile's &filetype
+    " for when gathering phrase from other &filetype's file.
+    let phrase.subject = s:commentout(&filetype, s:CONSTANTS.anchor . phrase.subject, 1)
+    let phrase.separator = s:commentout(&filetype, phrase.separator, 0)
+
+    call s:ensure( strdisplaywidth(phrase.subject) <= s:CONSTANTS.header_width,
+          \'phrase subject width exceeed '. s:CONSTANTS.header_width )
+
+    call append(0, [ phrase.subject, phrase.separator ] + phrase.body + [''])
+    execute "normal! 3ggV". (len( phrase.body ) - 1). "jo"
+  catch /phrase\.vim/
+    echom v:exception
+  endtry
 endfunction
 
 function! phrase#all(...) "{{{1
-  return call(s:phrase.all, a:000, s:phrase)
-endfunction
-
-function! phrase#files(...) "{{{1
-  return call(s:phrase.files, a:000, s:phrase)
-endfunction
-
-function! phrase#list(...) "{{{1
-  return call(s:phrase.list, a:000, s:phrase)
+  let files =  s:phrase.find('*')
+  let R = []
+  for file in files
+    call extend(R, s:phrase._parse(file, &filetype))
+  endfor
+  return R
 endfunction
 " }}}
 
@@ -229,7 +221,7 @@ if expand("%:p") !=# expand("<sfile>:p")
   finish
 endif
 
-function! s:run_test() "{{{1
+function! s:run_test() abort "{{{1
   let subject = 'Sample Phrase for filetype: コレはサンプルです。'
   let body = getline(line("'<"), line("'>"))
   let body = ['this is', 'sample', 'body' ]
@@ -251,14 +243,5 @@ function! s:run_test() "{{{1
     endif
   endfor
 endfunction
-
-" echo s:phrase.files('vim', 'vim')
-
-" echo PP( s:phrase.list('vim') )
-" PP table._table
-
 " call s:run_test()
-"}}}
-" echo s:phrase.findfile('help')
-
 " vim: foldmethod=marker

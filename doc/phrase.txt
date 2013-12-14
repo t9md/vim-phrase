@@ -11,7 +11,7 @@
         888         888   888 888    "Y888888  88888P'  "Y88888 
 <
 
-Version: 0.5
+Version: 0.6
 Author : t9md <taqumd@gmail.com>
 GitHub: http://github.com/t9md/vim-phrase
 ==============================================================================
@@ -33,37 +33,51 @@ Changelog				|phrase-changelog|
 ==============================================================================
 Introduction						*phrase-introduction*
 
-*phrase* is Vim plugin to help gathering useful phrase of several programming
+*phrase.vim* is Vim plugin to help gathering useful phrase of several programming
 languages.
 You can refer it conveniently while you are programming.
 
 Requirement:
-- Vim 7.0 or later
+- Vim 7.3 or later
 
 ==============================================================================
 VARIABLES						 *phrase-variables*
 
-g:phrase_author						*g:phrase_author*
-	Your identifier of phrase. this variable is used to identify
+*g:phrase_author*
+	Default: $USER
+
+	Your identification of phrase. This variable is used to identify
 	your phrase from several subdirectory under |g:phrase_basedir|.
 
-	Default~
-	  $USER
+*g:phrase_basedir*
+	Default: '~/.vim'
 
-g:phrase_basedir					*g:phrase_basedir*
-	Each phrase is created under `g:phrase_basedir/g:phrase_author/`
-	Default~
-	  $HOME/.vim/phrase
+	Each phrase is created under directory below
 
-b:phrase_file					*g:phrase_file*
-	buffer local variable to indicate phrase file
+	{g:phrase_basedir}/phrase/{g:phrase_author}
 
+*g:phrase_author_priority*
+	Default: {}
+
+	used by phrase |unite.vim| source when sorting each phrase.
+	higher priority comes first.
+
+	Example: >
+	let g:phrase_author_priority = {}
+	let g:phrase_author_priority['t9md'] = 3
+	let g:phrase_author_priority['yamada'] = 2
+	let g:phrase_author_priority['tanaka'] = 2
+<
+*b:phrase_file*
+	Default: not exist
+
+	If this variable is set, used to find phrase file.
+	
 Example~
 >
 	" Opscode's Chef is based on Ruby, but I want chef's phrase keep
 	" separated from Ruby's one.
-	au BufNewFile,BufRead */*cookbooks/* let b:phrase_file = 'chef'
-<
+	au BufNewFile,BufRead */*cookbooks/* let b:phrase_file = 'phrase__chef.rb'
 
 modeline~
 phrase.vim support original modeline.
@@ -73,38 +87,41 @@ phrase.vim search this modeline in 'last two line' in file.
 Example modeline~
 in chef.rb
 >
-	# phrase_file: chef.rb
-	# vim: set ft=ruby:
-<
+	# phrase_file: phrase__chef.rb
 
 Example for Rakefile~
 .vimrc
 >
-	au BufNewFile,BufRead Rakefile let b:phrase_file = 'rake.rb'
+	au BufNewFile,BufRead Rakefile let b:phrase_file = 'phrase__rake.rb'
 <
 in rake.rb
 >
-	# phrase_file: rake.rb
+	# phrase_file: phrase__rake.rb
 <
 ==============================================================================
 COMMANDS						*phrase-commands*
-
-:PhraseEdit {filename}					 *:PhraseEdit*
+								 *:PhraseEdit*
+:PhraseEdit {filename}
 	Edit phrase
-
-:[range]PhraseCreate					 *:PhraseCreate*
+	{filename} is optional
+							       *:PhraseCreate* 
+:[range]PhraseCreate {filename}
+	{filename} is optional
 	Create new phrase from current |:range|.
 
 ==============================================================================
 KEYMAP							*phrase-keymap*
 
 n_<Plug>(phrase-edit)
+	Edit phrase file
+
 v_<Plug>(phrase-create)
+	Create phrase from selected area
 
 ==============================================================================
 UNITE PLUGIN						 *phrase-unite*
 
-|phrase.vim| provide |unite.vim| plugin.
+|phrase.vim| provide |unite.vim| source.
 I highly recommend you to install |unite.vim| to get full power of |phrase.vim|.
 
 Try
@@ -132,7 +149,7 @@ Shareing phrase folder with Dropbox is another practical use case.
 If you dont't want to .swp files be synced every time your collaborator
 view your phrase, disable making swap file in among all collaborators.
 >
-    au BufNewFile,BufRead */phrase/*/phrase.* setlocal noswapfile
+    au BufNewFile,BufRead */phrase/*/phrase__*.* setlocal noswapfile
 <
 ------------------------------------------------------------------------------
 GITHUB						  *phrase-collaborate-github*
@@ -154,17 +171,20 @@ Example repository:~
 	phrase-t9md/phrase/t9md/phrase__ruby.rb
 
 Unite phrase plugin gather phrases from directory named `phrase` in &rtp.
-So if you manage you plugin with `pathogen` or Vundle, you can also manage
-phrases as easily as other plugin.
-For Vundle you can import t9md's phrase by setting following line in .vimrc
+So if you manage you plugin with pathogen, Vundle, or NeoBundle , you can also
+manage phrases with same manner as plugin.
+For example you can import t9md's phrase by setting following line in .vimrc
 >
 	Bundle: t9md/phrase-t9md
 	or
 	NeoBundle: t9md/phrase-t9md
 <
+And easily refer with 'Unite phrase'
+
 ==============================================================================
 FIND-ORDER						 *phrase-find-order*
 
+							     *phrase-filename*
 Phrase file name~
 
 Phrase file is merely normal file, typically its simple txt file containing
@@ -173,24 +193,26 @@ The name of phrase file should follow following convention.
 
 * phrase__{category}.{ext}
 
-for {category}, it is ordinarily equal to |&filetype|but sometime, its
+for {category}, it is ordinarily equal to |&filetype| but sometime its
 represent some sort of category which that phrase file aiming to.
 
 {ext} is extention for file.
 
-ex)
-phrase__ruby.rb
-phrase__perl.pl
+ex) >
+	phrase__ruby.rb
+	phrase__perl.pl
+<
 
 the above example are phrase file for ruby and perl.
 
-phrase__rake.rb
-phrase__chef.rb
-phrase__vagrant.rb
-
+ex) >
+	phrase__rake.rb
+	phrase__chef.rb
+	phrase__vagrant.rb
+<
 above example are phrase file for Rakefile, Opscode Chef's and for Vagrant.
-Each of these technology is written their own DSL(internal DSL designed using
-Ruby). All of them are esentially Ruby, and should treated as ruby file from
+Each of these file is written their own DSL(internal DSL powered by Ruby).
+All of them are esentially Ruby, so should be treated as ruby file from
 vim's view.
 
 So, category is sometime may different from |&filetype|, and {ext} provide
@@ -210,7 +232,6 @@ All phrase~
 Directory1: {g:phrase_basedir}/phrase/{g:phrase_author}/{phrase_file}
 Directory2: {&runtimepath}/phrase/*/{phrase_file}
 
-
 Phrase Comment determination~
 
 phrase.vim maintaine comment syntax for each programming languages by itself.
@@ -220,9 +241,6 @@ Comment string is suded to insert phrase header.
 Phrase Header format~
 
 as syntax perspective, it merely comment that follow following format.
-
-
-
 
 ==============================================================================
 BUGS							*phrase-bugs*

@@ -21,9 +21,10 @@ function! s:set_options(options) "{{{1
 endfunction
 "}}}
 
+let s:is_windows = has('win16') || has('win32') || has('win64') || has('win95')
 let s:options = {
-      \ 'g:phrase_author':          expand("$USER"),
-      \ 'g:phrase_basedir':         "~/.vim",
+      \ 'g:phrase_author': expand("$USER"),
+      \ 'g:phrase_basedir': s:is_windows ? "$HOME/vimfiles" : "$HOME/.vim",
       \ 'g:phrase_author_priority': {},
       \ }
 

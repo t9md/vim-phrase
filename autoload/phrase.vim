@@ -3,11 +3,14 @@ function! s:plog(msg) "{{{1
 endfunction
 "}}}
 
+let s:V = vital#of('phrase')
+let s:Path = s:V.import('System.Filepath')
+
 let s:CONSTANTS = {
       \ 'anchor': ' Phrase: ',
       \ 'header_width': 78,
       \ 'separator': '=',
-      \ 'phrasedir': simplify(expand(g:phrase_basedir . '/phrase/'. g:phrase_author)),
+      \ 'phrasedir': s:Path.join(expand(g:phrase_basedir ,'phrase', g:phrase_author)),
       \ }
 
 " Utility:
@@ -106,7 +109,7 @@ endfunction
 
 function! s:phrase._find(who, pattern) "{{{1
   let dirs = join(self.search_dirs(), ',')
-  let pattern = join([ 'phrase', a:who, a:pattern ], '/')
+  let pattern = s:Path.join('phrase', a:who, a:pattern)
   return globpath(dirs, pattern)
 endfunction
 
@@ -174,7 +177,7 @@ function! phrase#edit(...) "{{{1
       echohl Type
       let _file = input(prompt, 'phrase__' . &filetype . '.' . ext)
       echohl Normal
-      let file = join([s:CONSTANTS.phrasedir, _file], '/')
+      let file = s:Path.join(s:CONSTANTS.phrasedir, _file)
     endif
     call s:phrase.edit(file)
   catch /phrase\.vim/

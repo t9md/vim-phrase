@@ -2,7 +2,6 @@ Development State
 =====================================================================
 experimental
 
-
 Simple example-code reference system
 =====================================================================
 * work at off-line, no need to access internet.
@@ -13,12 +12,12 @@ config example
 =====================================================================
 .vimrc
 ```Vim
-  let g:phrase_author  = "t9md"
-  let g:phrase_basedir = "~/.vim/bundle/phrase-t9md"
+let g:phrase_author  = "t9md"
+let g:phrase_basedir = "~/.vim/bundle/phrase-t9md"
 
-  nmap gp <Plug>(phrase-edit)
-  xmap <Space>p <Plug>(phrase-create)
-  nnoremap <silent>   <Space>p  :<C-u>Unite phrase<CR>
+nmap gp <Plug>(phrase-edit)
+xmap gp <Plug>(phrase-create)
+nnoremap <silent>  <Space>p  :<C-u>Unite phrase<CR>
 ```
 
 Usage

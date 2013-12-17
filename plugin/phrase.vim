@@ -55,7 +55,7 @@ xnoremap <silent> <Plug>(phrase-create) :call phrase#create()<CR>
 command! -nargs=? -complete=customlist,phrase#myfiles
       \ PhraseEdit   :call phrase#edit(<f-args>)
 command! -nargs=? -range -complete=customlist,phrase#myfiles
-      \ PhraseCreate   :'<,'>call phrase#create(<f-args>)
+      \ PhraseCreate   :<line1>,<line2>call phrase#create(<f-args>)
 
 " Finish:
 let &cpo = s:old_cpo

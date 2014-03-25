@@ -10,7 +10,7 @@ let s:CONSTANTS = {
       \ 'anchor': ' Phrase: ',
       \ 'header_width': 78,
       \ 'separator': '=',
-      \ 'phrasedir': s:Path.join(expand(g:phrase_basedir ,'phrase', g:phrase_author)),
+      \ 'phrasedir': s:Path.join(expand(g:phrase_basedir) ,'phrase', g:phrase_author),
       \ }
 
 " Utility:
